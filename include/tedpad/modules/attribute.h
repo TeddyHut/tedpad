@@ -33,6 +33,7 @@ namespace tedpad {
 				DataDirection direction = DataDirection::ServerOutput;
 
 				Generic();
+				virtual ~Generic() = 0;
 			protected:
 				virtual std::vector<uint8_t> get_packetModuleData() const = 0;
 				virtual void set_packetModuleData(std::vector<uint8_t> const &p0) = 0;

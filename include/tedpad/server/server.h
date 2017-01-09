@@ -25,24 +25,7 @@ namespace tedpad {
 		//BLOCKING: Stops all server operation (will block)
 		void server_stop();
 
-		//Get the data of the specified attribute. Returns 0 for success.
-		//BLOCKING: Get a digital button attribute
-		bool server_Get_attribute(std::string const &attribute, bool &out) const;
-		//BLOCKING: Get an analogue button attribute
-		bool server_Get_attribute(std::string const &attribute, uint8_t &out) const;
-		//BLOCKING: Get an axis attribute
-		bool server_Get_attribute(std::string const &attribute, int16_t &out) const;
-		//BLOCKING: Get a buffer attribute
-		bool server_Get_attribute(std::string const &attribute, uint8_t const * &out) const;
-		//Set the data of the specified attribute. Rrturns 0 for success.
-		//BLOCKING: Set a digital button attribute
-		bool server_Set_attribute(std::string const &attribute, bool const in);
-		//BLOCKING: Set an analogue button attribute	
-		bool server_Set_attribute(std::string const &attribute, uint8_t const in);
-		//BLOCKING: Set an axis attribute
-		bool server_Set_attribute(std::string const &attribute, int16_t const in);
-		//BLOCKING: Set a buffer attribute
-		bool server_Set_attribute(std::string const &attribute, uint8_t const * const in);
+		
 
 		//Load a file descriping the gamepad that the server is serving
 		bool server_Load_descriptionFile(std::string const &path);
