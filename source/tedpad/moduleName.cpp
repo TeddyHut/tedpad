@@ -9,6 +9,19 @@ namespace tedpad {
 		{ eg::Descriptor<>::Descriptor({ { Key::Module, { Value::Module::Attribute_Axis } } }), "AttAxi" },
 		{ eg::Descriptor<>::Descriptor({ { Key::Module, { Value::Module::Attribute_Buffer } } }), "AttBuf" },
 		{ eg::Descriptor<>::Descriptor({ { Key::Module, { Value::Module::GamepadBriefDescription } } }), "GameBr" },
-		{ eg::Descriptor<>::Descriptor({ { Key::Module, { Value::Module::GamepadFullDescription } } }), "GameFu" }
+		{ eg::Descriptor<>::Descriptor({ { Key::Module, { Value::Module::GamepadFullDescription } } }), "GameFu" },
+		{ eg::Descriptor<>::Descriptor({ { Key::Module, { Value::Module::GamepadData } } }), "GameDa" },
 	};
+}
+
+eg::Descriptor<> tedpad::Module::Name::get_description(std::string const & moduleName)
+{
+	//Probs could compact this down a little more
+	eg::Descriptor<> rtrn;
+	auto itr = std::find_if(nameMap.begin(), nameMap.end(), [&](std::pair<eg::Descriptor<> const, std::string const> const &p0) { return (p0.second == moduleName); });
+	if (itr == nameMap.end())
+		rtrn[Key::Module] = Value::Module::Invalid;
+	else
+		rtrn = (*itr).first;
+	return(rtrn);
 }

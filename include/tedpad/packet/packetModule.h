@@ -9,6 +9,7 @@
 #include "../socket.h"
 
 namespace tedpad {
+	//Structure: ModuleStructre::begin -> moduleDataSize (4) -> moduleData -> ModuleStructure::end
 	struct PacketModule {
 		std::string name;
 		std::vector<uint8_t> data;

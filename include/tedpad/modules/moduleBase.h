@@ -10,7 +10,7 @@ namespace tedpad {
 		public:
 			virtual PacketModule to_packetModule() const = 0;
 			virtual void from_packetModule(PacketModule const &p0) = 0;
-			virtual operator PacketModule() const;
+			virtual operator tedpad::PacketModule() const;
 			virtual ModuleBase &operator=(PacketModule const &p0);
 
 			std::string get_description() const;
@@ -18,6 +18,7 @@ namespace tedpad {
 			eg::Descriptor<> description;
 
 			ModuleBase();
+			virtual ~ModuleBase();
 		};
 	}
 }

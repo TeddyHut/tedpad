@@ -10,6 +10,7 @@ namespace tedpad {
 	namespace Module {
 		namespace Name {
 			extern std::map<eg::Descriptor<> const, std::string const> const nameMap;
+			eg::Descriptor<> get_description(std::string const &p0);
 		}
 	}
 }

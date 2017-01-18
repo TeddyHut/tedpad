@@ -14,3 +14,5 @@ namespace tedpad {
 		extern std::string const end;
 	}
 }
+
+//Idea: Create a base class with an attribute vector containing a bunch of handy attribute functions (eg making new ones, counting types, etc)

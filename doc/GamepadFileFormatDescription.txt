@@ -1,0 +1,25 @@
+name = Dualshock2
+
+attribute_begin
+	type = digital
+	name = A
+	direction = out
+attribute_end
+
+attribute_begin
+	type = analogue
+	name = "Left Trigger"
+	direction = out
+attribute_end
+
+attribute_begin
+	type = axis
+	name = "Left Stick X"
+	direction = out
+attribute_end
+
+attribute_begin
+	type = analogue
+	name = "Left Rumble"
+	direction = in
+attribute_end

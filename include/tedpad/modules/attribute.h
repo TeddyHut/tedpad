@@ -23,17 +23,23 @@ namespace tedpad {
 				ServerOutput = 0,
 				ServerInput = 1,
 			};
-			//Could use template, but the desired outcome is a single vector for all attributes
+			//Structure: Module( dataDirection (1) -> attributeName (?) -> attribute_specific_data (?) )
 			struct Generic : public ModuleBase {
 				PacketModule to_packetModule() const override;
 				void from_packetModule(PacketModule const &p0) override;
 
+				template <typename value_t>
+				void set_value(value_t const &p0);
+				template <typename value_t>
+				value_t get_value() const;
+
 				//Name of button (eg "Start")
 				std::string attributeName;
 				DataDirection direction = DataDirection::ServerOutput;
+				void *value_ptr = nullptr;
 
 				Generic();
-				virtual ~Generic() = 0;
+				virtual ~Generic();
 			protected:
 				virtual std::vector<uint8_t> get_packetModuleData() const = 0;
 				virtual void set_packetModuleData(std::vector<uint8_t> const &p0) = 0;
@@ -93,6 +99,16 @@ namespace tedpad {
 				std::vector<uint8_t> get_packetModuleData() const override;
 				void set_packetModuleData(std::vector<uint8_t> const &p0) override;
 			};
+			template<typename value_t>
+			inline void Generic::set_value(value_t const & p0)
+			{
+				*static_cast<value_t *>(value_ptr) = p0;
+			}
+			template<typename value_t>
+			inline value_t Generic::get_value() const
+			{
+				return(*static_cast<value_t *>(value_ptr));
+			}
 		}
 	}
 }

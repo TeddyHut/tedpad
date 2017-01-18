@@ -5,8 +5,6 @@
 #include <vector>
 #include "../../../engine/include/eg/eg_engine.h"
 
-#include "../structures/client_description.h"
-
 namespace tedpad {
 	class Server : public eg::FullObject {
 		//Public API ideas

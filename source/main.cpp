@@ -3,20 +3,63 @@
 #include "../include/tedpad/dataManipulator_file/file.h"
 #include "../include/tedpad/modules/attribute.h"
 #include "../include/tedpad/modules/gamepadDescription.h"
+#include "../include/tedpad/modules/gamepadData.h"
+#include "../include/tedpad/gamepad/gamepad.h"
 #include "../include/tedpad/packet/packet.h"
+#include "../include/tedpad/gamepad/filetype_tpd.h"
 
 class Jack : public eg::Object {
 public:
 	void runover_init(void *rundata) override {
-		tedpad::ToNetworkPacket packet;
-		tedpad::Module::GamepadFullDescription desc;
-		desc.briefDescription.gamepadName = "Dualshock2";
-		desc.briefDescription.out_digitalCount = 0xa;
-		desc.briefDescription.out_analogueCount = 0xb;
-		desc.briefDescription.out_axisCount = 0xc;
-		desc.briefDescription.out_bufferCount = 0xd;
+		tedpad::Gamepad gamepad("TestPad");
+		/*
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Digital, tedpad::Gamepad::AttributeDirection::Set, "A");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Digital, tedpad::Gamepad::AttributeDirection::Set, "B");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Digital, tedpad::Gamepad::AttributeDirection::Set, "X");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Digital, tedpad::Gamepad::AttributeDirection::Set, "Y");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Digital, tedpad::Gamepad::AttributeDirection::Get, "Up");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Digital, tedpad::Gamepad::AttributeDirection::Get, "Down");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Digital, tedpad::Gamepad::AttributeDirection::Get, "Left");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Digital, tedpad::Gamepad::AttributeDirection::Get, "Right");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Analogue, tedpad::Gamepad::AttributeDirection::Set, "A");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Analogue, tedpad::Gamepad::AttributeDirection::Set, "B");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Analogue, tedpad::Gamepad::AttributeDirection::Set, "X");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Analogue, tedpad::Gamepad::AttributeDirection::Set, "Y");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Analogue, tedpad::Gamepad::AttributeDirection::Get, "Up");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Analogue, tedpad::Gamepad::AttributeDirection::Get, "Down");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Analogue, tedpad::Gamepad::AttributeDirection::Get, "Left");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Analogue, tedpad::Gamepad::AttributeDirection::Get, "Right");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Axis, tedpad::Gamepad::AttributeDirection::Set, "A");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Axis, tedpad::Gamepad::AttributeDirection::Set, "B");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Axis, tedpad::Gamepad::AttributeDirection::Set, "X");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Axis, tedpad::Gamepad::AttributeDirection::Set, "Y");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Axis, tedpad::Gamepad::AttributeDirection::Get, "Up");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Axis, tedpad::Gamepad::AttributeDirection::Get, "Down");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Axis, tedpad::Gamepad::AttributeDirection::Get, "Left");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Axis, tedpad::Gamepad::AttributeDirection::Get, "Right");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Buffer, tedpad::Gamepad::AttributeDirection::Set, "A");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Buffer, tedpad::Gamepad::AttributeDirection::Set, "B");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Buffer, tedpad::Gamepad::AttributeDirection::Set, "X");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Buffer, tedpad::Gamepad::AttributeDirection::Set, "Y");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Buffer, tedpad::Gamepad::AttributeDirection::Get, "Up");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Buffer, tedpad::Gamepad::AttributeDirection::Get, "Down");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Buffer, tedpad::Gamepad::AttributeDirection::Get, "Left");
+		gamepad.add_newAttribute(tedpad::Gamepad::AttributeType::Buffer, tedpad::Gamepad::AttributeDirection::Get, "Right");
+		auto description = gamepad.to_gamepadFullDescription();
+		*/
 
-		packet.add_module(desc.to_packetModule());
+		eg::DataReference ref;
+		ref.description[tedpad::Key::DataReference_Description] = tedpad::Value::DataReference_Description::File;
+		std::string input = "test.tpd";
+		std::hash<std::string> hash;
+		ref.alteration = hash(input);
+		ref.dataPointer = static_cast<void*>(&input);
+		loadData(ref);
+		tedpad::Module::GamepadFullDescription description = tedpad::File::TPD_to_GamepadFullDescription(static_cast<uint8_t const *>(ref.dataPointer), ref.dataSize);
+		freeData(ref);
+
+		tedpad::ToNetworkPacket packet;
+		packet.add_module(description.to_packetModule());
 		auto data = packet.get_fullPacketData();
 
 		eg::DataReference dataRef;

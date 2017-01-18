@@ -6,21 +6,21 @@ tedpad::PacketModule tedpad::Module::GamepadBriefDescription::to_packetModule() 
 	mod.name = get_description();
 	std::copy(gamepadName.begin(), gamepadName.end(), std::back_inserter(mod.data));
 	mod.data.push_back('\0');
-	uint32_t count = htonl(out_digitalCount);
+	uint32_t count = htonl(static_cast<uint32_t>(out_digitalCount));
 	std::copy_n(reinterpret_cast<uint8_t*>(&count), sizeof(uint32_t), std::back_inserter(mod.data));
-	count = htonl(out_analogueCount);
+	count = htonl(static_cast<uint32_t>(out_analogueCount));
 	std::copy_n(reinterpret_cast<uint8_t*>(&count), sizeof(uint32_t), std::back_inserter(mod.data));
-	count = htonl(out_axisCount);
+	count = htonl(static_cast<uint32_t>(out_axisCount));
 	std::copy_n(reinterpret_cast<uint8_t*>(&count), sizeof(uint32_t), std::back_inserter(mod.data));
-	count = htonl(out_bufferCount);
+	count = htonl(static_cast<uint32_t>(out_bufferCount));
 	std::copy_n(reinterpret_cast<uint8_t*>(&count), sizeof(uint32_t), std::back_inserter(mod.data));
-	count = htonl(in_digitalCount);
+	count = htonl(static_cast<uint32_t>(in_digitalCount));
 	std::copy_n(reinterpret_cast<uint8_t*>(&count), sizeof(uint32_t), std::back_inserter(mod.data));
-	count = htonl(in_analogueCount);
+	count = htonl(static_cast<uint32_t>(in_analogueCount));
 	std::copy_n(reinterpret_cast<uint8_t*>(&count), sizeof(uint32_t), std::back_inserter(mod.data));
-	count = htonl(in_axisCount);
+	count = htonl(static_cast<uint32_t>(in_axisCount));
 	std::copy_n(reinterpret_cast<uint8_t*>(&count), sizeof(uint32_t), std::back_inserter(mod.data));
-	count = htonl(in_bufferCount);
+	count = htonl(static_cast<uint32_t>(in_bufferCount));
 	std::copy_n(reinterpret_cast<uint8_t*>(&count), sizeof(uint32_t), std::back_inserter(mod.data));
 	mod.valid = true;
 	return(mod);
@@ -107,7 +107,29 @@ void tedpad::Module::GamepadFullDescription::from_packetModule(PacketModule cons
 	}
 }
 
+void tedpad::Module::GamepadFullDescription::update_briefDesciptionCount()
+{
+	briefDescription.out_digitalCount = get_attributeServerOutCount(Attribute::PlaceHolderType::Digital);
+	briefDescription.out_analogueCount = get_attributeServerOutCount(Attribute::PlaceHolderType::Analogue);
+	briefDescription.out_axisCount = get_attributeServerOutCount(Attribute::PlaceHolderType::Axis);
+	briefDescription.out_bufferCount = get_attributeServerOutCount(Attribute::PlaceHolderType::Buffer);
+	briefDescription.in_digitalCount = get_attributeServerInCount(Attribute::PlaceHolderType::Digital);
+	briefDescription.in_analogueCount = get_attributeServerInCount(Attribute::PlaceHolderType::Analogue);
+	briefDescription.in_axisCount = get_attributeServerInCount(Attribute::PlaceHolderType::Axis);
+	briefDescription.in_bufferCount = get_attributeServerInCount(Attribute::PlaceHolderType::Buffer);
+}
+
 tedpad::Module::GamepadFullDescription::GamepadFullDescription()
 {
 	description[Key::Module] = Value::Module::GamepadFullDescription;
+}
+
+size_t tedpad::Module::GamepadFullDescription::get_attributeServerOutCount(Attribute::PlaceHolderType const attr_desc) const
+{
+	return(std::count_if(attribute.begin(), attribute.end(), [&](Module::Attribute::PlaceHolder const &p0)->bool { return((attr_desc == p0.value) && (p0.direction == Module::Attribute::DataDirection::ServerOutput)); }));
+}
+
+size_t tedpad::Module::GamepadFullDescription::get_attributeServerInCount(Attribute::PlaceHolderType const attr_desc) const
+{
+	return(std::count_if(attribute.begin(), attribute.end(), [&](Module::Attribute::PlaceHolder const &p0)->bool { return((attr_desc == p0.value) && (p0.direction == Module::Attribute::DataDirection::ServerInput)); }));
 }

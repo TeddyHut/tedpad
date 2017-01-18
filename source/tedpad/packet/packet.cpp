@@ -49,7 +49,7 @@ std::vector<uint8_t> tedpad::ToNetworkPacket::get_fullPacketData() const
 	auto buf = get_packetData();
 	std::copy(PacketStructure::begin.begin(), PacketStructure::begin.end(), std::back_inserter(rtrn));
 	rtrn.push_back('\0');
-	uint32_t size = htonl(get_packetSize());
+	uint32_t size = htonl(static_cast<uint32_t>(get_packetSize()));
 	std::copy_n(reinterpret_cast<uint8_t *>(&size), sizeof(uint32_t), std::back_inserter(rtrn));
 	std::copy(buf.begin(), buf.end(), std::back_inserter(rtrn));
 	std::copy(PacketStructure::end.begin(), PacketStructure::end.end(), std::back_inserter(rtrn));

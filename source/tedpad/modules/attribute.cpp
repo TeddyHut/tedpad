@@ -17,19 +17,23 @@ void tedpad::Module::Attribute::Generic::from_packetModule(PacketModule const &p
 	set_description(p0.name);
 	if (description[Key::Module] & Value::Module::Invalid)
 		return;
-	auto itr = std::find(p0.data.begin(), p0.data.end(), '\0');
+	direction = static_cast<DataDirection>(p0.data.at(0));
+	auto itr = std::find(p0.data.begin() + 1, p0.data.end(), '\0');
 	if (itr == p0.data.end()) {
 		description[Key::Module] = Value::Module::Invalid;
 		return;
 	}
-	direction = static_cast<DataDirection>(*(itr++));
 	attributeName = std::string(p0.data.begin(), itr);
 	set_packetModuleData(std::vector<uint8_t>(++itr, p0.data.end()));
 }
 
 tedpad::Module::Attribute::Generic::Generic()
 {
-	description[Key::Module] += Value::Module::Attribute_Generic;
+	description[Key::Module] = Value::Module::Attribute_Generic;
+}
+
+tedpad::Module::Attribute::Generic::~Generic()
+{
 }
 
 tedpad::Module::Attribute::PlaceHolder::operator tedpad::Module::Attribute::PlaceHolderType() const
@@ -45,7 +49,8 @@ tedpad::Module::Attribute::PlaceHolder & tedpad::Module::Attribute::PlaceHolder:
 
 tedpad::Module::Attribute::PlaceHolder::PlaceHolder()
 {
-	description[Key::Module] += Value::Module::Attribute_PlaceHolder;
+	description[Key::Module] = Value::Module::Attribute_PlaceHolder;
+	value_ptr = &value;
 }
 
 std::vector<uint8_t> tedpad::Module::Attribute::PlaceHolder::get_packetModuleData() const
@@ -68,7 +73,8 @@ tedpad::Module::Attribute::Digital &tedpad::Module::Attribute::Digital::operator
 }
 
 tedpad::Module::Attribute::Digital::Digital() {
-	description[Key::Module] += Value::Module::Attribute_Digital;
+	description[Key::Module] = Value::Module::Attribute_Digital;
+	value_ptr = &value;
 }
 
 std::vector<uint8_t> tedpad::Module::Attribute::Digital::get_packetModuleData() const
@@ -91,7 +97,8 @@ tedpad::Module::Attribute::Analogue &tedpad::Module::Attribute::Analogue::operat
 }
 
 tedpad::Module::Attribute::Analogue::Analogue() {
-	description[Key::Module] += Value::Module::Attribute_Analogue;
+	description[Key::Module] = Value::Module::Attribute_Analogue;
+	value_ptr = &value;
 }
 
 std::vector<uint8_t> tedpad::Module::Attribute::Analogue::get_packetModuleData() const
@@ -114,7 +121,8 @@ tedpad::Module::Attribute::Axis &tedpad::Module::Attribute::Axis::operator=(int1
 }
 
 tedpad::Module::Attribute::Axis::Axis() {
-	description[Key::Module] += Value::Module::Attribute_Axis;
+	description[Key::Module] = Value::Module::Attribute_Axis;
+	value_ptr = &value;
 }
 
 std::vector<uint8_t> tedpad::Module::Attribute::Axis::get_packetModuleData() const
@@ -142,7 +150,8 @@ tedpad::Module::Attribute::Buffer::operator uint8_t const *() const
 }
 
 tedpad::Module::Attribute::Buffer::Buffer() {
-	description[Key::Module] += Value::Module::Attribute_Buffer;
+	description[Key::Module] = Value::Module::Attribute_Buffer;
+	value_ptr = &value;
 }
 
 std::vector<uint8_t> tedpad::Module::Attribute::Buffer::get_packetModuleData() const

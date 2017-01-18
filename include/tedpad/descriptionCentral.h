@@ -28,6 +28,7 @@ namespace tedpad {
 				Attribute_Buffer = murmur3_32_value("tedpad::Value::Module::Attribute_Buffer", 39, 0),
 				GamepadBriefDescription = murmur3_32_value("tedpad::Value::Module::GamepadBriefDescription", 46, 0),
 				GamepadFullDescription = murmur3_32_value("tedpad::Value::Module::GamepadFullDescription", 45, 0),
+				GamepadData = murmur3_32_value("tedpad::Value::Module::GamepadData", 34, 0),
 			};
 		}
 	}

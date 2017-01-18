@@ -4,7 +4,7 @@ static std::string const _egNAME_FILE_seg_ = __FILE__;
 
 tedpad::DataManipulator::File::File() {
 	dataManipulator_loadData_exe = [this](eg::GlbRtrn &rtrn, eg::DataReference &dataReference)->bool { return(this->loadData_impl(rtrn, dataReference)); };
-	dataManipulator_freeData_exe = [this](eg::GlbRtrn &rtrn, eg::DataReference &dataReference)->bool { return(this->loadData_impl(rtrn, dataReference)); };
+	dataManipulator_freeData_exe = [this](eg::GlbRtrn &rtrn, eg::DataReference &dataReference)->bool { return(this->freeData_impl(rtrn, dataReference)); };
 	dataManipulator_writeData_exe = [this](eg::GlbRtrn &rtrn, eg::DataReference const &dataReference)->bool { return(this->writeData_impl(rtrn, dataReference)); };
 	
 	description[Key::DataReference_Description] = Value::DataReference_Description::File;
@@ -14,18 +14,18 @@ bool tedpad::DataManipulator::File::loadData_impl(eg::GlbRtrn &rtrn, eg::DataRef
 	static std::string const _egNAME_FUNCTION_seg_ = __FUNCSIG__;
 	if (dataReference.description[Key::DataReference_Description] & Value::DataReference_Description::File) {
 		std::string const * const path = static_cast<std::string const * const>(dataReference.dataPointer);
-		std::ifstream file(*path);
+		std::ifstream file(*path, std::istream::in | std::istream::binary | std::istream::ate);
 		if (!file) {
 			eg_GlbRtrn_egResult(rtrn, eg::Main_Result_Failure_r);
 			return(rtrn);
 		}
-		file.seekg(0, std::ios_base::end);
 		dataReference.dataSize = static_cast<size_t>(file.tellg());
 		dataReference.dataPointer = static_cast<void *>(new uint8_t[dataReference.dataSize]);
 		if (dataReference.dataPointer == nullptr) {
 			eg_GlbRtrn_egResult(rtrn, eg::Main_Result_Failure_r);
 			return(rtrn);
 		}
+		file.seekg(0, std::ios_base::beg);
 		file.read(static_cast<char *>(dataReference.dataPointer), dataReference.dataSize);
 		if (!file) {
 			eg_GlbRtrn_egResult(rtrn, eg::Main_Result_Failure_r);

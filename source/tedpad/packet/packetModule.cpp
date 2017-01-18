@@ -20,7 +20,7 @@ std::vector<uint8_t> tedpad::PacketModule::to_netbuf() const {
 		*(next_itr++) = '\0';
 		next_itr = std::copy(name.cbegin(), name.cend(), next_itr);
 		*(next_itr++) = '\0';
-		uint32_t size = htonl(data.size());
+		uint32_t size = htonl(static_cast<uint32_t>(data.size()));
 		next_itr = std::copy_n(reinterpret_cast<uint8_t *>(&size), sizeof(uint32_t), next_itr);
 		next_itr = std::copy(data.cbegin(), data.cend(), next_itr);
 		next_itr = std::copy(ModuleStructure::end.cbegin(), ModuleStructure::end.cend(), next_itr);
