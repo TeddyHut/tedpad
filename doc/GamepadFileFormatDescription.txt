@@ -1,25 +1,48 @@
-name = Dualshock2
+This file is a description of the ".tpd" (tedpad description) gamepad description format.
+For an example, see "GamepadExample.tpd"
 
-attribute_begin
-	type = digital
-	name = A
-	direction = out
-attribute_end
+The keywords will be descriped in the following format:
+"keyword": <scope that the keyword can be used in>
 
-attribute_begin
-	type = analogue
-	name = "Left Trigger"
-	direction = out
-attribute_end
 
-attribute_begin
-	type = axis
-	name = "Left Stick X"
-	direction = out
-attribute_end
+--- Keyword Description ---
 
-attribute_begin
-	type = analogue
-	name = "Left Rumble"
-	direction = in
-attribute_end
+"name": Global scope
+	Usage: name = <string>
+	The name keyword is used to name the gamepad. This name will be broadcasted to clients.
+	If spaces are desired, enclose within quotes ""
+
+"attribute_begin": Global scope
+	Usage: attribute_begin ... attribute_end
+	The attibute_begin keyword is used to create another attribute in the gamepad.
+	Will change the current scope to attribute scope
+
+"attribute_end": Attribute scope
+	Usage: attribute_begin ... attribute_end
+	The attribute_end keyword is used to end the properties of an attribute previously opened with "attribute_begin"
+	Will change the current scope to global scope
+
+"type": Attribute scope
+	Usage: type = <type_keyword>
+	The type keyword is used to set the type of an attribute. Valid type keywords are as follows:
+		"digital"
+			A bool attribute
+		"analogue"
+			An unsigned 8-bit integer attribute (byte)
+		"axis"
+			A signed 16-bit integer attribute
+		"buffer"
+			A user defined buffer for custom data
+
+"direction": Attribute scope
+	Usage: direction = <direction_keyword>
+	The direction keyword is used to set the direction of an attribute. Valid direction keywords are as follows:
+		"out"
+			A server output
+		"in"
+			A server input
+
+"name": Attribute scope
+	Usage: name = <string>
+	The name keyword, when used in attribute scope, is used to name an attribute.
+	If spaces are descired, enclose within quotes ""

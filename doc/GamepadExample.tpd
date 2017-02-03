@@ -1,0 +1,73 @@
+name = "Dualshock 2"
+
+attribute_begin
+	type = digital
+	name = "Circle"
+	direction = out
+attribute_end
+
+attribute_begin
+	type = digital
+	name = "Cross"
+	direction = out
+attribute_end
+
+attribute_begin
+	type = digital
+	name = "Triangle"
+	direction = out
+attribute_end
+
+attribute_begin
+	type = digital
+	name = "Square"
+	direction = out
+attribute_end
+
+attribute_begin
+	type = analogue
+	name = "Left Trigger"
+	direction = out
+attribute_end
+
+attribute_begin
+	type = analogue
+	name = "Right Trigger"
+	direction = out
+attribute_end
+
+attribute_begin
+	type = axis
+	name = "Left Stick X"
+	direction = out
+attribute_end
+
+attribute_begin
+	type = axis
+	name = "Left Stick Y"
+	direction = out
+attribute_end
+
+attribute_begin
+	type = axis
+	name = "Right Stick X"
+	direction = out
+attribute_end
+
+attribute_begin
+	type = axis
+	name = "Right Stick Y"
+	direction = out
+attribute_end
+
+attribute_begin
+	type = analogue
+	name = "Left Rumble"
+	direction = in
+attribute_end
+
+attribute_begin
+	type = analogue
+	name = "Right Rumble"
+	direction = in
+attribute_end
