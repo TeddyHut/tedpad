@@ -122,7 +122,7 @@ void tedpad::intern_server::Designator::thread_main()
 				}
 			}
 		}
-		else if (errno != EWOULDBLOCK) {
+		else if ((errno != EWOULDBLOCK) && (errno != EAGAIN)) {
 			std::cerr << "tedpad::intern_server::Designator::thread_main(): accept error" << std::endl;
 			exit(1);
 		}

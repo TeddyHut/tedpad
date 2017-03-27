@@ -10,7 +10,7 @@
 #include "../modules/gamepadData.h"
 
 //TOOD: Work out something to remove all the repetition in gamepad.cpp (probably need to change something in attribute)
-//NOTE: ATM settable attributes cannot be retreived in any way by the user
+//NOTE: ATM settable attributes cannot be retreived in any way by the user OR BY THE clientDescription class. Fix for clientknowledge of rumble values and whatnot is needed.
 //TODO: Add some add_attribute member functions that don't require a pointer to a generic attribute
 //TODO: Clean up the mess that occurs between AttributeType and Module::Attribute::PlaceHolderType (eg some functions use AttributeType, some use placeholder type)
 //TODO: Clean up the same mess except between AttributeDirection and Module::Attribute::Direction

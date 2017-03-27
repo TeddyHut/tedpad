@@ -16,6 +16,8 @@
 #include "broadcaster.h"
 #include "designator.h"
 
+//TODO: Maybe I should make a base class out of the server_intern objects. They have a bit of similar code.
+
 namespace tedpad {
 	class Server {
 	public:

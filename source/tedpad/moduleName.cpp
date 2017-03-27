@@ -11,6 +11,8 @@ namespace tedpad {
 		{ eg::Descriptor<>::Descriptor({ { Key::Module, { Value::Module::GamepadBriefDescription } } }), "GameBr" },
 		{ eg::Descriptor<>::Descriptor({ { Key::Module, { Value::Module::GamepadFullDescription } } }), "GameFu" },
 		{ eg::Descriptor<>::Descriptor({ { Key::Module, { Value::Module::GamepadData } } }), "GameDa" },
+		{ eg::Descriptor<>::Descriptor({ { Key::Module, { Value::Module::Request } } }), "Reques" },
+		{ eg::Descriptor<>::Descriptor({ { Key::Module, { Value::Module::Reply } } }), "Reply" },
 	};
 }
 

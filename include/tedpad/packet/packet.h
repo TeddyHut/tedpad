@@ -27,6 +27,10 @@ namespace tedpad {
 		std::vector<uint8_t> get_packetData() const;
 		//Gets the data for the packet, including the header and the footer
 		std::vector<uint8_t> get_fullPacketData() const;
+
+		ToNetworkPacket() = default;
+		ToNetworkPacket &operator=(ToNetworkPacket &&p0) = default;
+		ToNetworkPacket(ToNetworkPacket &&p0) = default;
 	private:
 		std::vector<PacketModule> vec_mod;
 	};
@@ -44,6 +48,10 @@ namespace tedpad {
 		std::vector<PacketModule> get_packetModules() const;
 		//Gets the packet modules, including the check for the header and footer
 		std::vector<PacketModule> get_packetModulesCheck() const;
+
+		FromNetworkPacket() = default;
+		FromNetworkPacket &operator=(FromNetworkPacket &&p0) = default;
+		FromNetworkPacket(FromNetworkPacket &&p0) = default;
 	private:
 		std::vector<uint8_t> vec_data;
 	};

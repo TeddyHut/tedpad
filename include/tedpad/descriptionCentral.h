@@ -28,6 +28,8 @@ namespace tedpad {
 				GamepadBriefDescription,
 				GamepadFullDescription,
 				GamepadData,
+				Request,
+				Reply,
 			};
 		}
 	}

@@ -187,7 +187,7 @@ void tedpad::Gamepad::add_attribute(Module::Attribute::Generic const * const p0,
 		return;
 	attr_ptr->attributeName = p0->attributeName;
 	attr_ptr->direction = p0->direction;
-	vec_attribute.push_back(dynamic_cast<Module::Attribute::Generic *>(attr_ptr));
+	vec_attribute.push_back(attr_ptr);
 }
 
 void tedpad::Gamepad::add_newAttribute(AttributeType const type, AttributeDirection const direction, std::string const & name)
