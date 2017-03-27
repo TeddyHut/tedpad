@@ -15,56 +15,38 @@
 #include "../modules/gamepadDescription.h"
 #include "../packet/packet.h"
 #include "../packet/packetModule.h"
+#include "../util/threadedObject.h"
 
 //TODO: Make it so that client can receive both Server::Out and Server::In information.
 
 namespace tedpad {
 	namespace intern_server {
-		class ClientHandle {
+		class ClientHandle : public util::thread::ThreadedObject, public util::thread::SleepObject {
 		public:
-			enum class Instruction_e {
-				RunInit = 0,
-				StopThread,
-			};
-			enum class Config_e {
-
-			};
-			enum class State_e {
-				Thread_Running = 0,
-				GamepadUpdate,
-				ClientDisconnected,
-			};
-			
-			eg::Param<Instruction_e> m_instruction;
-			mutable std::mutex mx_instruction;
-			
-			eg::Param<Config_e> m_config;
-			mutable std::mutex mx_config;
-
-			eg::Param<State_e> m_state;
-			mutable std::mutex mx_state;
+			bool state_gamepadUpdate() const;
+			bool state_clientDisconnected() const;
 
 			ImplementationClientInfo get_clientInfo() const;
 
-			void set_updateRate(std::chrono::milliseconds const &updateRate);
-			std::chrono::milliseconds get_updateRate() const;
-
 			ClientHandle(ImplementationClientInfo const &socket, UpdateSignal const &updateSignal, GamepadMutex const &gamepadMutex, std::chrono::milliseconds const &updateRate = std::chrono::milliseconds(10));
-			~ClientHandle();
 		private:
-			std::thread pm_thread;
+			enum class State_e {
+				GamepadUpdate = 0,
+				ClientDisconnected,
+			};
+
+			eg::Param<State_e> pm_state;
+			mutable std::mutex pmx_state;
+
 			UpdateSignal const pm_updateSignal;
 			GamepadMutex const pm_gamepadMutex;
 
 			ImplementationClientInfo const pm_clientInfo;
 			mutable std::mutex pmx_clientInfo;
 
-			std::chrono::milliseconds pm_updateRate;
-			mutable std::mutex pmx_updateRate;
-
-			void thread_main();
-			void thread_init();
-			void thread_close();
+			void thread_init() override;
+			void thread_main() override;
+			void thread_close() override;
 
 			ToNetworkPacket requestCallback_Receive_GamepadFullDescription(FromNetworkPacket const &fromPacket);
 			ToNetworkPacket requestCallback_Receive_GamepadData_DirectionOut(FromNetworkPacket const &fromPacket);
