@@ -40,7 +40,7 @@ uint16_t tedpad::intern_server::Designator::get_port() const
 	return(pm_port);
 }
 
-tedpad::intern_server::Designator::Designator(uint16_t const port, UpdateSignal updateSignal, std::chrono::milliseconds const &updateRate) : pm_port(port), pm_updateSignal(updateSignal), SleepObject(updateRate)
+tedpad::intern_server::Designator::Designator(UpdateSignal const &updateSignal, uint16_t const port, std::chrono::milliseconds const &updateRate) : pm_updateSignal(updateSignal), pm_port(port), SleepObject(updateRate)
 {
 }
 
@@ -66,7 +66,8 @@ void tedpad::intern_server::Designator::thread_main()
 			pm_state[State_e::ClientPending] = true;
 
 			if (pm_updateSignal.filled()) {
-				std::lock_guard<std::unique_lock<std::mutex>> lx_updateSignal_lock(*pm_updateSignal.lock);
+				std::lock_guard<std::mutex> lx_updateSignal_lock(*pm_updateSignal.lock);
+				pm_updateSignal.eventQueue->push_back(UpdateSignal::Event::Designator_NewClient);
 				*pm_updateSignal.request = true;
 				pm_updateSignal.signal->notify_all();
 			}
@@ -113,7 +114,7 @@ void tedpad::intern_server::Designator::thread_init()
 		exit(1);
 	}
 
-	result = bind(pm_socket, getaddrinfo_out->ai_addr, getaddrinfo_out->ai_addrlen);
+	result = bind(pm_socket, getaddrinfo_out->ai_addr, static_cast<int>(getaddrinfo_out->ai_addrlen));
 	if (result == SOCKET_ERROR) {
 		std::cerr << "tedpad::intern_server::Designator::thread_init(): bind error" << std::endl;
 		exit(1);

@@ -30,7 +30,7 @@ namespace tedpad {
 			void set_port(uint16_t const port);
 			uint16_t get_port() const;
 
-			Designator(uint16_t const port = Default_port, UpdateSignal updateSignal = UpdateSignal(), std::chrono::milliseconds const &updateRate = std::chrono::milliseconds(50));
+			Designator(UpdateSignal const &updateSignal = UpdateSignal(), uint16_t const port = Default_port, std::chrono::milliseconds const &updateRate = std::chrono::milliseconds(50));
 		private:
 			enum class State_e {
 				ClientPending = 0,

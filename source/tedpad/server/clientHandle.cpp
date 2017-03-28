@@ -1,11 +1,5 @@
 #include "../../../include/tedpad/server/clientHandle.h"
 
-bool tedpad::intern_server::ClientHandle::state_gamepadUpdate() const
-{
-	std::lock_guard<std::mutex> lx_state(pmx_state);
-	return(pm_state[State_e::GamepadUpdate]);
-}
-
 bool tedpad::intern_server::ClientHandle::state_clientDisconnected() const
 {
 	std::lock_guard<std::mutex> lx_state(pmx_state);
@@ -16,6 +10,16 @@ tedpad::intern_server::ImplementationClientInfo tedpad::intern_server::ClientHan
 {
 	std::lock_guard<std::mutex> lx_clientInfo(pmx_clientInfo);
 	return(pm_clientInfo);
+}
+
+tedpad::intern_server::ClientHandle & tedpad::intern_server::ClientHandle::operator=(ClientHandle && p0)
+{
+	//
+	return(*this);
+}
+
+tedpad::intern_server::ClientHandle::ClientHandle(ClientHandle &&)
+{
 }
 
 tedpad::intern_server::ClientHandle::ClientHandle(ImplementationClientInfo const &clientInfo, UpdateSignal const &updateSignal, GamepadMutex const &gamepadMutex, std::chrono::milliseconds const &updateRate) :
@@ -36,7 +40,8 @@ void tedpad::intern_server::ClientHandle::thread_main()
 {
 	//Make the 2048 more universal (eg give it a name)
 	std::vector<uint8_t> recv_data(2048);
-	int bufferLen = recv(pm_clientInfo.socket, reinterpret_cast<char *>(recv_data.data()), recv_data.size(), 0);
+	int bufferLen;
+	bufferLen = recv(pm_clientInfo.socket, reinterpret_cast<char *>(recv_data.data()), static_cast<int>(recv_data.size()), 0);
 	if (bufferLen > 0) {
 		recv_data.resize(bufferLen);
 		FromNetworkPacket fromPacket;
@@ -47,7 +52,7 @@ void tedpad::intern_server::ClientHandle::thread_main()
 			if (packetModules.at(0).name == requestModule.get_description()) {
 				requestModule.from_packetModule(packetModules.at(0));
 				ToNetworkPacket toPacket = (this->*requestCallback_map.at(requestModule.request))(fromPacket);
-				send(pm_clientInfo.socket, reinterpret_cast<char const *>(toPacket.get_fullPacketData().data()), toPacket.get_fullPacketSize(), 0);
+				send(pm_clientInfo.socket, reinterpret_cast<char const *>(toPacket.get_fullPacketData().data()), static_cast<int>(toPacket.get_fullPacketSize()), 0);
 			}
 		}
 	}
@@ -76,6 +81,11 @@ void tedpad::intern_server::ClientHandle::thread_init()
 
 void tedpad::intern_server::ClientHandle::thread_close()
 {
+	std::lock_guard<std::mutex> lx_updateSignal(*pm_updateSignal.lock);
+	pm_updateSignal.eventQueue->push_back(UpdateSignal::Event::ClientHandle_ClientDisconnected);
+	*pm_updateSignal.request = true;
+	pm_updateSignal.signal->notify_all();
+
 	closesocket(pm_clientInfo.socket);
 }
 
@@ -108,13 +118,8 @@ tedpad::ToNetworkPacket tedpad::intern_server::ClientHandle::requestCallback_Sen
 	if (gamepadDataItr != fromModules.end()) {
 		std::lock_guard<std::mutex> lx_state(pmx_state);
 		std::lock_guard<std::mutex> lx_gamepad(*pm_gamepadMutex.mx_gamepad);
-		std::lock_guard<std::unique_lock<std::mutex>> lx_updateSignal(*pm_updateSignal.lock);
 		gamepadData.from_packetModule(*gamepadDataItr);
 		pm_gamepadMutex.gamepad->set_gamepadData(gamepadData);
-
-		pm_state[State_e::GamepadUpdate] = true;
-		*pm_updateSignal.request = true;
-		pm_updateSignal.signal->notify_all();
 	}
 	return(toPacket);
 }

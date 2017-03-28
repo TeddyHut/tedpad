@@ -3,6 +3,7 @@
 #include <thread>
 #include <mutex>
 #include <chrono>
+#include <utility>
 
 #include "../../../engine/include/eg/eg_engine.h"
 
@@ -16,9 +17,16 @@ namespace tedpad {
 
 				virtual bool state_threadRunning() const;
 
+				//Can't have these because of std::thread
+				ThreadedObject &operator=(ThreadedObject const &) = delete;
+				ThreadedObject(ThreadedObject const &) = delete;
+				ThreadedObject &operator=(ThreadedObject &&p0);
+				ThreadedObject(ThreadedObject &&p0);
 				ThreadedObject();
 				virtual ~ThreadedObject();
 			protected:
+				void op_assign(ThreadedObject &&p0);
+
 				enum class Instruction_e {
 					Run_thread_init = 0,
 					Run_thread_close,

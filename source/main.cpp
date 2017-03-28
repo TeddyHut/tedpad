@@ -50,7 +50,7 @@ public:
 
 		eg::DataReference ref;
 		ref.description[tedpad::Key::DataReference_Description] = tedpad::Value::DataReference_Description::File;
-		std::string input = "test.tpd";
+		std::string input = "../../doc/GamepadExample.tpd";
 		std::hash<std::string> hash;
 		ref.alteration = hash(input);
 		ref.dataPointer = static_cast<void*>(&input);
@@ -64,7 +64,7 @@ public:
 
 		eg::DataReference dataRef;
 		dataRef.description[tedpad::Key::DataReference_Description] = tedpad::Value::DataReference_Description::File;
-		std::string fileOut = "output.bin";
+		std::string fileOut = "../../doc/output.bin";
 		dataRef.alteration = reinterpret_cast<size_t>(&fileOut);
 		dataRef.dataPointer = data.data();
 		dataRef.dataSize = data.size();

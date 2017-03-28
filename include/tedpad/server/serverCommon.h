@@ -20,9 +20,15 @@ namespace tedpad {
 		};
 		//Used to update the server running thread 
 		struct UpdateSignal {
+			enum class Event : uint8_t {
+				Designator_NewClient,
+				ClientHandle_ClientDisconnected,
+				Server_ConfigUpdate_Broadcast,
+			};
+			std::vector<Event> *eventQueue;
 			bool *request = nullptr;
 			//Maybe use std::shared_lock (or whatever it is) instead of a pointer to a unique_lock
-			std::unique_lock<std::mutex> *lock = nullptr;
+			std::mutex *lock = nullptr;
 			std::condition_variable *signal = nullptr;
 			bool filled() const;
 		};

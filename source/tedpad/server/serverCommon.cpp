@@ -2,7 +2,7 @@
 
 bool tedpad::intern_server::UpdateSignal::filled() const
 {
-	return((request != nullptr) && (lock != nullptr) && (signal != nullptr));
+	return((eventQueue != nullptr) && (request != nullptr) && (lock != nullptr) && (signal != nullptr));
 }
 
 bool tedpad::intern_server::GamepadMutex::filled() const

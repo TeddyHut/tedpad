@@ -5,14 +5,15 @@
 #include <WS2tcpip.h>
 #include <iostream>
 #pragma comment(lib, "ws2_32.lib")
-#define EWOULDBLOCK WSAEWOULDBLOCK
+typedef size_t SOCKETRESULT_t;
 #else
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
 
-typedef int SOCKET
+typedef int SOCKET;
+typedef int SOCKETRESULT_t;
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
 //Come up with comething more C++ than define.

@@ -23,21 +23,24 @@ namespace tedpad {
 	namespace intern_server {
 		class ClientHandle : public util::thread::ThreadedObject, public util::thread::SleepObject {
 		public:
-			bool state_gamepadUpdate() const;
 			bool state_clientDisconnected() const;
 
 			ImplementationClientInfo get_clientInfo() const;
 
+			ClientHandle &operator=(ClientHandle const &) = delete;
+			ClientHandle(ClientHandle const &) = delete;
+			ClientHandle &operator=(ClientHandle &&p0);
+			ClientHandle(ClientHandle &&);
 			ClientHandle(ImplementationClientInfo const &socket, UpdateSignal const &updateSignal, GamepadMutex const &gamepadMutex, std::chrono::milliseconds const &updateRate = std::chrono::milliseconds(10));
 		private:
 			enum class State_e {
-				GamepadUpdate = 0,
-				ClientDisconnected,
+				ClientDisconnected = 0,
 			};
 
 			eg::Param<State_e> pm_state;
 			mutable std::mutex pmx_state;
 
+			//Even though update signal isn't actuall used. Oh well.
 			UpdateSignal const pm_updateSignal;
 			GamepadMutex const pm_gamepadMutex;
 
