@@ -1,15 +1,15 @@
 #include "../../../include/tedpad/packet/packetModule.h"
 
-void tedpad::PacketModule::set_dataSize(size_t const p0) {
+void tedpad::PacketModule::set_dataSize(uint16_t const p0) {
 	data.resize(p0);
 }
 
-size_t tedpad::PacketModule::get_dataSize() const {
-	return(data.size());
+uint16_t tedpad::PacketModule::get_dataSize() const {
+	return(static_cast<uint16_t>(data.size()));
 }
 
-size_t tedpad::PacketModule::get_totalSize() const {
-	return(ModuleStructure::begin.size() + 1 + name.size() + 1 + sizeof(uint32_t) + data.size() + ModuleStructure::end.size() + 1);
+uint16_t tedpad::PacketModule::get_totalSize() const {
+	return(static_cast<uint16_t>(ModuleStructure::begin.size() + 1 + name.size() + 1 + sizeof(uint16_t) + data.size() + ModuleStructure::end.size() + 1));
 }
 
 std::vector<uint8_t> tedpad::PacketModule::to_netbuf() const {
@@ -20,8 +20,8 @@ std::vector<uint8_t> tedpad::PacketModule::to_netbuf() const {
 		*(next_itr++) = '\0';
 		next_itr = std::copy(name.cbegin(), name.cend(), next_itr);
 		*(next_itr++) = '\0';
-		uint32_t size = htonl(static_cast<uint32_t>(data.size()));
-		next_itr = std::copy_n(reinterpret_cast<uint8_t *>(&size), sizeof(uint32_t), next_itr);
+		uint16_t size = htons(static_cast<uint16_t>(data.size()));
+		next_itr = std::copy_n(reinterpret_cast<uint8_t *>(&size), sizeof(uint16_t), next_itr);
 		next_itr = std::copy(data.cbegin(), data.cend(), next_itr);
 		next_itr = std::copy(ModuleStructure::end.cbegin(), ModuleStructure::end.cend(), next_itr);
 		*next_itr = '\0';
@@ -51,9 +51,9 @@ void tedpad::PacketModule::from_netbuf(std::vector<uint8_t> const &p0) {
 	}
 	name = std::string(next_itr, nameEnd_itr);
 	next_itr = nameEnd_itr;
-	uint32_t size;
-	std::copy(next_itr, next_itr += sizeof(uint32_t), reinterpret_cast<uint8_t *>(&size));
-	set_dataSize(ntohl(size));
+	uint16_t size;
+	std::copy(next_itr, next_itr += sizeof(uint16_t), reinterpret_cast<uint8_t *>(&size));
+	set_dataSize(ntohs(size));
 	std::copy(next_itr, next_itr += get_dataSize(), data.begin());
 	if (std::string(next_itr, next_itr += ModuleStructure::end.size()) != ModuleStructure::end) {
 		valid = false;

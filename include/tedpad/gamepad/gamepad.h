@@ -11,7 +11,6 @@
 #include "../modules/gamepadData.h"
 
 //TOOD: Work out something to remove all the repetition in gamepad.cpp (probably need to change something in attribute)
-//NOTE: ATM settable attributes cannot be retreived in any way by the user OR BY THE clientDescription class. Fix for clientknowledge of rumble values and whatnot is needed.
 //TODO: Add some add_attribute member functions that don't require a pointer to a generic attribute
 //TODO: Clean up the mess that occurs between AttributeType and Module::Attribute::PlaceHolderType (eg some functions use AttributeType, some use placeholder type)
 //TODO: Clean up the same mess except between AttributeDirection and Module::Attribute::Direction
@@ -123,8 +122,8 @@ namespace tedpad {
 		Module::Attribute::DataDirection conv_attributeDirection_to_dataDirection(AttributeDirection const direction) const;
 		Module::Attribute::PlaceHolderType conv_attributeType_to_placeHolderType(AttributeType const type) const;
 		
-		size_t get_attributeServerOutCount(eg::Descriptor<> const attr_desc) const;
-		size_t get_attributeServerInCount(eg::Descriptor<> const attr_desc) const;
+		uint8_t get_attributeServerOutCount(eg::Descriptor<> const attr_desc) const;
+		uint8_t get_attributeServerInCount(eg::Descriptor<> const attr_desc) const;
 
 		void set_attributeItr(std::vector<Module::Attribute::Generic *>::iterator const itr, Module::Attribute::Generic const *const p0);
 		void get_attributeItr(std::vector<Module::Attribute::Generic *>::const_iterator const itr, Module::Attribute::Generic *const p0) const;

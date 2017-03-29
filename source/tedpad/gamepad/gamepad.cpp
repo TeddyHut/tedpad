@@ -321,14 +321,14 @@ tedpad::Module::Attribute::PlaceHolderType tedpad::Gamepad::conv_attributeType_t
 	return(map_AttributeType_PlaceHolderType.at(type));
 }
 
-size_t tedpad::Gamepad::get_attributeServerOutCount(eg::Descriptor<> const attr_desc) const
+uint8_t tedpad::Gamepad::get_attributeServerOutCount(eg::Descriptor<> const attr_desc) const
 {
-	return(std::count_if(vec_attribute.begin(), vec_attribute.end(), [&](Module::Attribute::Generic const *const p0)->bool { return((attr_desc & p0->description) && (p0->direction == Module::Attribute::DataDirection::ServerOutput)); }));
+	return(static_cast<uint8_t>(std::count_if(vec_attribute.begin(), vec_attribute.end(), [&](Module::Attribute::Generic const *const p0)->bool { return((attr_desc & p0->description) && (p0->direction == Module::Attribute::DataDirection::ServerOutput)); })));
 }
 
-size_t tedpad::Gamepad::get_attributeServerInCount(eg::Descriptor<> const attr_desc) const
+uint8_t tedpad::Gamepad::get_attributeServerInCount(eg::Descriptor<> const attr_desc) const
 {
-	return(std::count_if(vec_attribute.begin(), vec_attribute.end(), [&](Module::Attribute::Generic const *const p0)->bool { return((attr_desc & p0->description) && (p0->direction == Module::Attribute::DataDirection::ServerInput)); }));
+	return(static_cast<uint8_t>(std::count_if(vec_attribute.begin(), vec_attribute.end(), [&](Module::Attribute::Generic const *const p0)->bool { return((attr_desc & p0->description) && (p0->direction == Module::Attribute::DataDirection::ServerInput)); })));
 }
 
 void tedpad::Gamepad::set_attributeItr(std::vector<Module::Attribute::Generic*>::iterator const itr, Module::Attribute::Generic const * const p0)

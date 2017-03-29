@@ -46,6 +46,9 @@ void tedpad::Server::set_gamepad(Gamepad * const gamepad)
 	pmx_state.unlock();
 	if (gamepad != nullptr) {
 		gamepad->set_IODirection(Gamepad::IODirection::Server);
+		pmx_gamepad.lock();
+		pm_gamepad.from_gamepadFullDescription(gamepad->to_gamepadFullDescription());
+		pmx_gamepad.unlock();
 		server_gamepadSync();
 	}
 }

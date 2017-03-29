@@ -20,7 +20,7 @@ namespace tedpad {
 		public:
 			static constexpr uint16_t Default_port = 3101;
 
-			Broadcaster(GamepadMutex const &gamepadMutex, uint16_t const port = Default_port, std::chrono::milliseconds const &updateRate = std::chrono::milliseconds(45));
+			Broadcaster(GamepadMutex const &gamepadMutex, uint16_t const port = Default_port, std::chrono::milliseconds const &updateRate = std::chrono::milliseconds(1000));
 		private:
 			GamepadMutex const pm_gamepadMutex;
 
