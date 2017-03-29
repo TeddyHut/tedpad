@@ -44,7 +44,10 @@ void tedpad::Server::set_gamepad(Gamepad * const gamepad)
 	pm_externalGamepad = gamepad;
 	pm_state[State_e::GamepadSet] = gamepad != nullptr;
 	pmx_state.unlock();
-	server_gamepadSync();
+	if (gamepad != nullptr) {
+		gamepad->set_IODirection(Gamepad::IODirection::Server);
+		server_gamepadSync();
+	}
 }
 
 tedpad::Gamepad * tedpad::Server::get_gamepad() const
@@ -56,7 +59,7 @@ std::vector<tedpad::ClientInfo> tedpad::Server::get_connectedClients() const
 {
 	std::lock_guard<std::mutex> lx_connectedClient(pmx_connectedClient);
 	std::vector<ClientInfo> rtrn;
-	std::for_each(pm_connectedClient.begin(), pm_connectedClient.end(), [&](intern_server::ClientHandle const &p0) {rtrn.push_back(p0.get_clientInfo()); });
+	std::for_each(pm_connectedClient.begin(), pm_connectedClient.end(), [&](intern_server::ClientHandle const  * const p0) {rtrn.push_back(p0->get_clientInfo()); });
 	return(rtrn);
 }
 
@@ -72,6 +75,9 @@ void tedpad::Server::server_stop()
 
 void tedpad::Server::server_gamepadSync()
 {
+	std::lock_guard<std::mutex> lx_gamepad(pmx_gamepad);
+	pm_externalGamepad->set_gamepadData_dataDirection(pm_gamepad.get_gamepadData_dataDirection(Module::Attribute::DataDirection::ServerInput));
+	pm_gamepad.set_gamepadData(pm_externalGamepad->get_gamepadData_dataDirection(Module::Attribute::DataDirection::ServerOutput));
 }
 
 void tedpad::Server::instruction_stop()
@@ -91,6 +97,7 @@ void tedpad::Server::instruction_stop()
 
 void tedpad::Server::thread_init()
 {
+	socket_service::startup();
 	std::lock_guard<std::mutex> lx_config(pmx_config);
 	std::lock_guard<std::mutex> lx_updateSignal(pm_lock);
 	if (!status_gamepadSet())
@@ -120,18 +127,23 @@ void tedpad::Server::thread_close()
 {
 	delete pm_broadcaster;
 	delete pm_designator;
-	pm_connectedClient.clear();
+	//Delete all clientHandles
+	std::for_each(pm_connectedClient.begin(), pm_connectedClient.end(),
+		[](intern_server::ClientHandle * const p0) { delete p0; });
+	socket_service::shutdown();
 }
 
 void tedpad::Server::eventCallback_Designator_NewClient()
 {
 	std::lock_guard<std::mutex> lx_state(pmx_state);
 	std::lock_guard<std::mutex> lx_connectedClient(pmx_connectedClient);
+	//This will run for as many clientsPending as there are, since one is removed each tiem get_pendingClientInfo is called
 	while (pm_designator->state_clientPending()) {
-		pm_connectedClient.emplace_back(
+		//Create a new dynamically allocated clienthandle and add it to the connecteClient vector
+		pm_connectedClient.emplace_back( new intern_server::ClientHandle(
 			pm_designator->get_pendingClientInfo(true),
 			intern_server::UpdateSignal{ &pm_eventQueue, &pm_request, &pm_lock, &pm_signal },
-			intern_server::GamepadMutex{ &pm_gamepad, &pmx_gamepad });
+			intern_server::GamepadMutex{ &pm_gamepad, &pmx_gamepad }));
 	}
 	pm_state[State_e::ClientPending] = false;
 }
@@ -139,8 +151,14 @@ void tedpad::Server::eventCallback_Designator_NewClient()
 void tedpad::Server::eventCallback_ClientHandle_ClientDisconnected()
 {
 	std::lock_guard<std::mutex> lx_connectedClient(pmx_connectedClient);
-	pm_connectedClient.erase(std::remove_if(pm_connectedClient.begin(), pm_connectedClient.end(),
-		[](intern_server::ClientHandle const &p0) { return(p0.state_clientDisconnected()); }), pm_connectedClient.end());
+	//Get an iterator to the clients to be removed
+	auto remove_startItr = std::remove_if(pm_connectedClient.begin(), pm_connectedClient.end(),
+		[](intern_server::ClientHandle * const p0) { return(p0->state_clientDisconnected()); });
+	//Delete the clients to be removed
+	std::for_each(remove_startItr, pm_connectedClient.end(),
+		[](intern_server::ClientHandle * const p0) { delete p0; });
+	//Erease the pointers that were deleted
+	pm_connectedClient.erase(remove_startItr, pm_connectedClient.end());
 }
 
 void tedpad::Server::eventCallback_Server_ConfigUpdate_Broadcast()
@@ -155,12 +173,14 @@ void tedpad::Server::eventCallback_Server_ConfigUpdate_Broadcast()
 	}
 }
 
-tedpad::Server::Server(Gamepad * const gamepad, bool const start)
+tedpad::Server::Server(Gamepad * const gamepad, bool const start) : pm_config(3), pm_state(2)
 {
 	pm_config[Config_e::Broadcast] = true;
 	pm_config[Config_e::AutoAccept] = true;
 	pm_config[Config_e::AutoDecline] = false;
 	pm_state[State_e::GamepadSet] = false;
+
+	pm_gamepad.set_IODirection(Gamepad::IODirection::Server);
 
 	set_gamepad(gamepad);
 	if (start)

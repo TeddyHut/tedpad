@@ -40,7 +40,11 @@ uint16_t tedpad::intern_server::Designator::get_port() const
 	return(pm_port);
 }
 
-tedpad::intern_server::Designator::Designator(UpdateSignal const &updateSignal, uint16_t const port, std::chrono::milliseconds const &updateRate) : pm_updateSignal(updateSignal), pm_port(port), SleepObject(updateRate)
+tedpad::intern_server::Designator::Designator(UpdateSignal const &updateSignal, uint16_t const port, std::chrono::milliseconds const &updateRate) :
+	pm_state(1),
+	pm_updateSignal(updateSignal),
+	pm_port(port),
+	SleepObject(updateRate)
 {
 }
 
@@ -73,8 +77,8 @@ void tedpad::intern_server::Designator::thread_main()
 			}
 		}
 	}
-	else if ((errno != EWOULDBLOCK) && (errno != EAGAIN)) {
-		std::cerr << "tedpad::intern_server::Designator::thread_main(): accept error" << std::endl;
+	else if ((socket_service::get_lastError() != socket_service::ERROR_EWOULDBLOCK) && (socket_service::get_lastError() != socket_service::ERROR_WAGAIN)) {
+		std::cout << "tedpad::intern_server::Designator::thread_main(): accept error" << std::endl;
 		exit(1);
 	}
 
@@ -102,32 +106,32 @@ void tedpad::intern_server::Designator::thread_init()
 	getaddrinfo_in.ai_flags = AI_PASSIVE;
 	result = getaddrinfo(NULL, port_ss.str().c_str(), &getaddrinfo_in, &getaddrinfo_out);
 	if (result != 0) {
-		//Probably need to lock cerr somehow...
-		std::cerr << "tedpad::intern_server::Designator::thread_init(): getaddrinfo error: " << gai_strerror(result) << std::endl;;
+		//Probably need to lock cout somehow...
+		std::cout << "tedpad::intern_server::Designator::thread_init(): getaddrinfo error: " << gai_strerror(result) << std::endl;;
 		//TODO: Something better than "exit" around here. (GlbRtrn?)
 		exit(1);
 	}
 
 	pm_socket = socket(getaddrinfo_out->ai_family, getaddrinfo_out->ai_socktype, getaddrinfo_out->ai_protocol);
 	if (pm_socket == INVALID_SOCKET) {
-		std::cerr << "tedpad::intern_server::Designator::thread_init(): socket error" << std::endl;
+		std::cout << "tedpad::intern_server::Designator::thread_init(): socket error" << std::endl;
 		exit(1);
 	}
 
 	result = bind(pm_socket, getaddrinfo_out->ai_addr, static_cast<int>(getaddrinfo_out->ai_addrlen));
 	if (result == SOCKET_ERROR) {
-		std::cerr << "tedpad::intern_server::Designator::thread_init(): bind error" << std::endl;
+		std::cout << "tedpad::intern_server::Designator::thread_init(): bind error" << std::endl;
 		exit(1);
 	}
 
 	result = listen(pm_socket, SOMAXCONN);
 	if (result == SOCKET_ERROR) {
-		std::cerr << "tedpad::intern_server::Designator::thread_init(): listen error" << std::endl;
+		std::cout << "tedpad::intern_server::Designator::thread_init(): listen error" << std::endl;
 		exit(1);
 	}
 	
-	if (socket_setBlocking(pm_socket, false)) {
-		std::cerr << "tedpad::intern_server::Designator::thread_init(): socket_setBlocking error" << std::endl;
+	if (socket_service::socket_setBlocking(pm_socket, false)) {
+		std::cout << "tedpad::intern_server::Designator::thread_init(): socket_setBlocking error" << std::endl;
 		exit(1);
 	}
 }

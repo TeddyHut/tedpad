@@ -12,17 +12,8 @@ tedpad::intern_server::ImplementationClientInfo tedpad::intern_server::ClientHan
 	return(pm_clientInfo);
 }
 
-tedpad::intern_server::ClientHandle & tedpad::intern_server::ClientHandle::operator=(ClientHandle && p0)
-{
-	//
-	return(*this);
-}
-
-tedpad::intern_server::ClientHandle::ClientHandle(ClientHandle &&)
-{
-}
-
 tedpad::intern_server::ClientHandle::ClientHandle(ImplementationClientInfo const &clientInfo, UpdateSignal const &updateSignal, GamepadMutex const &gamepadMutex, std::chrono::milliseconds const &updateRate) :
+	pm_state(1),
 	pm_clientInfo(clientInfo),
 	pm_updateSignal(updateSignal),
 	pm_gamepadMutex(gamepadMutex),
@@ -62,7 +53,7 @@ void tedpad::intern_server::ClientHandle::thread_main()
 		pmx_state.unlock();
 		instruction_stop();
 	}
-	else if ((errno != EWOULDBLOCK) && (errno != EAGAIN)) {
+	else if ((socket_service::get_lastError() != socket_service::ERROR_EWOULDBLOCK) && (socket_service::get_lastError() != socket_service::ERROR_WAGAIN)) {
 		std::cerr << "tedpad::intern_server::ClientHandle::thread_main(): recv error" << std::endl;
 		exit(1);
 	}
@@ -76,7 +67,7 @@ void tedpad::intern_server::ClientHandle::thread_main()
 
 void tedpad::intern_server::ClientHandle::thread_init()
 {
-	socket_setBlocking(pm_clientInfo.socket, false);
+	socket_service::socket_setBlocking(pm_clientInfo.socket, false);
 }
 
 void tedpad::intern_server::ClientHandle::thread_close()

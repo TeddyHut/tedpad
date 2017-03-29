@@ -42,9 +42,9 @@ namespace tedpad {
 		//Set the server broadcast rate
 		void set_broadcastRate(std::chrono::milliseconds const &value);
 		
-		//Sets the gamepad that the server will modify on server_update()
+		//Sets the gamepad that the server will modify on server_gamepadSync(). Will also set the gamepad direction to IODirection::Server
 		void set_gamepad(Gamepad *const gamepad);
-		//Gets the gamepad that the server will modify on server_update()
+		//Gets the gamepad that the server will modify on server_gamepadSync()
 		Gamepad *get_gamepad() const;
 
 		//Retrieves a description of the client that is pending connection
@@ -106,7 +106,7 @@ namespace tedpad {
 		intern_server::Broadcaster *pm_broadcaster;
 
 		//A vector of the connected clientHandles
-		std::vector<intern_server::ClientHandle> pm_connectedClient;
+		std::vector<intern_server::ClientHandle *> pm_connectedClient;
 		mutable std::mutex pmx_connectedClient;
 
 		//Need this to stop a deadlock when the thread stops: the thread will never leave thread_main without the updateSignal

@@ -40,7 +40,7 @@ namespace tedpad {
 			mutable std::mutex pmx_state;
 
 			UpdateSignal pm_updateSignal;
-			SOCKET pm_socket;
+			socket_service::SOCKET pm_socket;
 
 			uint16_t pm_port;
 			mutable std::mutex pmx_port;

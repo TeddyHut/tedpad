@@ -99,6 +99,26 @@ bool tedpad::Gamepad::Set_attribute(std::string const & attribute, std::vector<u
 	return(false);
 }
 
+void tedpad::Gamepad::from_tpdFile(std::string const & fileContent)
+{
+	from_tpdFile(fileContent.c_str(), fileContent.size());
+}
+
+void tedpad::Gamepad::from_tpdFile(std::vector<uint8_t> const & fileContent)
+{
+	from_tpdFile(fileContent.data(), fileContent.size());
+}
+
+void tedpad::Gamepad::from_tpdFile(char const * const fileContent, size_t const len)
+{
+	from_tpdFile(reinterpret_cast<uint8_t const *const>(fileContent), len);
+}
+
+void tedpad::Gamepad::from_tpdFile(uint8_t const * const fileContent, size_t const len)
+{
+	from_gamepadFullDescription(File::TPD_to_GamepadFullDescription(fileContent, len));
+}
+
 void tedpad::Gamepad::from_gamepadFullDescription(Module::GamepadFullDescription const & p0)
 {
 	std::for_each(vec_attribute.begin(), vec_attribute.end(), [](Module::Attribute::Generic *const p0) { delete p0; });
@@ -163,6 +183,29 @@ tedpad::Module::GamepadData tedpad::Gamepad::get_gamepadData() const
 	rtrn.gamepadName = gamepadName;
 	rtrn.direction = conv_attributeDirection_to_dataDirection(AttributeDirection::Get);
 	std::for_each(vec_attribute.begin(), vec_attribute.end(), [&](Module::Attribute::Generic const *const p0) { if(p0->direction == conv_attributeDirection_to_dataDirection(AttributeDirection::Get)) rtrn.add_attribute(p0); });
+	return(rtrn);
+}
+
+void tedpad::Gamepad::set_gamepadData_dataDirection(Module::GamepadData const & p0)
+{
+	if (gamepadName == p0.gamepadName) {
+		for (auto &&element : p0.vec_attribute) {
+			if (element->direction != p0.direction)
+				continue;
+			auto itr = std::find_if(vec_attribute.begin(), vec_attribute.end(), p_AttributeMatch(element->description[Key::Module], element->direction, element->attributeName));
+			if (itr == vec_attribute.end())
+				continue;
+			set_attributeItr(itr, element);
+		}
+	}
+}
+
+tedpad::Module::GamepadData tedpad::Gamepad::get_gamepadData_dataDirection(Module::Attribute::DataDirection const dataDirection) const
+{
+	Module::GamepadData rtrn;
+	rtrn.gamepadName = gamepadName;
+	rtrn.direction = dataDirection;
+	std::for_each(vec_attribute.begin(), vec_attribute.end(), [&](Module::Attribute::Generic const *const p0) { if (p0->direction == dataDirection) rtrn.add_attribute(p0); });
 	return(rtrn);
 }
 

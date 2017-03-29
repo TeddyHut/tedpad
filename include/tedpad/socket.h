@@ -5,22 +5,39 @@
 #include <WS2tcpip.h>
 #include <iostream>
 #pragma comment(lib, "ws2_32.lib")
-typedef size_t SOCKETRESULT_t;
+
+namespace tedpad {
+	namespace socket_service {
+		typedef ::SOCKET SOCKET;
+		constexpr int ERROR_EWOULDBLOCK = WSAEWOULDBLOCK;
+		constexpr int ERROR_WAGAIN = WSAEWOULDBLOCK;
+	}
+}
+
 #else
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
 
-typedef int SOCKET;
-typedef int SOCKETRESULT_t;
-#define INVALID_SOCKET -1
-#define SOCKET_ERROR -1
-//Come up with comething more C++ than define.
-#define closesocket close
+namespace tedpad {
+	namespace socket_service {
+		typedef int SOCKET;
+		constexpr int INVALID_SOCKET = -1;
+		constexpr int SOCKET_ERROR - 1;
+
+		constexpr int ERROR_EWOULDBLOCK = EWOULDBLOCK;
+		constexpr int ERROR_EAGAIN = EAGAIN;
+	}
+}
 #endif
 
-void socketService_init();
-void socketService_close();
+namespace tedpad {
+	namespace socket_service {
+		void startup();
+		void shutdown();
 
-bool socket_setBlocking(SOCKET const &socket, bool const block);
+		int get_lastError();
+		bool socket_setBlocking(SOCKET const &socket, bool const block);
+	}
+}

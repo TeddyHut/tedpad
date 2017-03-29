@@ -5,7 +5,7 @@
 namespace tedpad {
 	namespace Key {
 		enum e {
-			DataReference_Description,
+			DataReference_Description = 100,
 			Module,
 			Attribute,
 		};

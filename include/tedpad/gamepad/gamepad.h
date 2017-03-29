@@ -5,6 +5,7 @@
 #include <map>
 #include "../../../engine/include/eg/eg_engine.h"
 
+#include "filetype_tpd.h"
 #include "../modules/attribute.h"
 #include "../modules/gamepadDescription.h"
 #include "../modules/gamepadData.h"
@@ -70,6 +71,14 @@ namespace tedpad {
 		//Set a buffer attribute
 		bool Set_attribute(std::string const &attribute, std::vector<uint8_t> const &in);
 
+		//Create a gamepad from a .tpd file (should this be vector or string?)
+		//This is the contents of the file: not the path
+		void from_tpdFile(std::string const &fileContent);
+		void from_tpdFile(std::vector<uint8_t> const &fileContent);
+		void from_tpdFile(std::vector<char> const &fileContent);
+		void from_tpdFile(char const *const fileContent, size_t const len);
+		void from_tpdFile(uint8_t const *const fileContent, size_t const len);
+
 		//Allocate attributes and set name to align with p0
 		void from_gamepadFullDescription(Module::GamepadFullDescription const &p0);
 		//Get a GamepadBreifDescription describing the gamepad
@@ -77,10 +86,15 @@ namespace tedpad {
 		//Get a GamepadFullDescription describing the gamepad
 		Module::GamepadFullDescription to_gamepadFullDescription() const;
 
-		//Set the attribute data for the gamepad (that can be set)
+		//Set the attribute data for the gamepad (that can be set). If the gamepad is IODirection::Server, it will set the data with direction ServerOut.
+		//Has a check to ensure that p0 does not set read/get only attributes
 		void set_gamepadData(Module::GamepadData const &p0);
-		//Get the attribute data for the gamepad (that can be read)
+		//Get the attribute data for the gamepad (that can be read). If the gamepad is IODirection::Server, it will get the data with direction ServerIn.
 		Module::GamepadData get_gamepadData() const;
+
+		//Same as set_gamepadData, except read only values can also be set
+		void set_gamepadData_dataDirection(Module::GamepadData const &p0);
+		Module::GamepadData get_gamepadData_dataDirection(Module::Attribute::DataDirection const dataDirection) const;
 		
 		//Set whether the gamepad is on the server or client side
 		void set_IODirection(IODirection const p0);

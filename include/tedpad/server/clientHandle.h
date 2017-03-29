@@ -27,10 +27,12 @@ namespace tedpad {
 
 			ImplementationClientInfo get_clientInfo() const;
 
+			//Can't have any of these: see "threadedObject"
 			ClientHandle &operator=(ClientHandle const &) = delete;
 			ClientHandle(ClientHandle const &) = delete;
-			ClientHandle &operator=(ClientHandle &&p0);
-			ClientHandle(ClientHandle &&);
+			ClientHandle &operator=(ClientHandle &&) = delete;
+			ClientHandle(ClientHandle &&) = delete;
+
 			ClientHandle(ImplementationClientInfo const &socket, UpdateSignal const &updateSignal, GamepadMutex const &gamepadMutex, std::chrono::milliseconds const &updateRate = std::chrono::milliseconds(10));
 		private:
 			enum class State_e {

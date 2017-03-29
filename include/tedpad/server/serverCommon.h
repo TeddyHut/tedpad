@@ -16,7 +16,7 @@ namespace tedpad {
 	namespace intern_server {
 		//Used as an exchange between the designator and the clientHandle
 		struct ImplementationClientInfo : public ClientInfo {
-			SOCKET socket = -1;
+			socket_service::SOCKET socket = -1;
 		};
 		//Used to update the server running thread 
 		struct UpdateSignal {

@@ -17,16 +17,16 @@ namespace tedpad {
 
 				virtual bool state_threadRunning() const;
 
-				//Can't have these because of std::thread
+				//Can't have these because of std::thread.
 				ThreadedObject &operator=(ThreadedObject const &) = delete;
 				ThreadedObject(ThreadedObject const &) = delete;
-				ThreadedObject &operator=(ThreadedObject &&p0);
-				ThreadedObject(ThreadedObject &&p0);
+				//Can't have these because the std::thread is bound to a particular object: moving the thread will still have it referencing the old object. Would need to stop the thread and start it again.
+				//TODO: Make these work (it is possible with some interesting code)
+				ThreadedObject &operator=(ThreadedObject &&p0) = delete;
+				ThreadedObject(ThreadedObject &&p0) = delete;
 				ThreadedObject();
 				virtual ~ThreadedObject();
 			protected:
-				void op_assign(ThreadedObject &&p0);
-
 				enum class Instruction_e {
 					Run_thread_init = 0,
 					Run_thread_close,

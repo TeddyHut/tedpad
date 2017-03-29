@@ -25,18 +25,7 @@ bool tedpad::util::thread::ThreadedObject::state_threadRunning() const
 	return(pm_state[State_e::ThreadRunning]);
 }
 
-tedpad::util::thread::ThreadedObject & tedpad::util::thread::ThreadedObject::operator=(ThreadedObject && p0)
-{
-	op_assign(std::move(p0));
-	return(*this);
-}
-
-tedpad::util::thread::ThreadedObject::ThreadedObject(ThreadedObject && p0)
-{
-	op_assign(std::move(p0));
-}
-
-tedpad::util::thread::ThreadedObject::ThreadedObject()
+tedpad::util::thread::ThreadedObject::ThreadedObject() : pm_instruction(2), pm_state(1)
 {
 	pm_instruction[Instruction_e::Run_thread_init] = false;
 	pm_instruction[Instruction_e::Run_thread_close] = false;
@@ -50,11 +39,6 @@ tedpad::util::thread::ThreadedObject::~ThreadedObject()
 		pmx_state.unlock();
 		instruction_stop();
 	}
-}
-
-void tedpad::util::thread::ThreadedObject::op_assign(ThreadedObject && p0)
-{
-	
 }
 
 void tedpad::util::thread::ThreadedObject::thread_manage()
