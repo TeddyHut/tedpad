@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gamepad/filetype_tpd.h"
-#include "gamepad/gamepad.h"
-#include "server/server.h"
-#include "client/client.h"
+#include "tedpad/gamepad/filetype_tpd.h"
+#include "tedpad/gamepad/gamepad.h"
+#include "tedpad/server/server.h"
+#include "tedpad/client/client.h"
