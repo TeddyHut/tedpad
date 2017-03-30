@@ -124,6 +124,8 @@ void tedpad::intern_server::Designator::thread_init()
 		exit(1);
 	}
 
+	freeaddrinfo(getaddrinfo_out);
+
 	result = listen(pm_socket, SOMAXCONN);
 	if (result == SOCKET_ERROR) {
 		std::cout << "tedpad::intern_server::Designator::thread_init(): listen error" << std::endl;

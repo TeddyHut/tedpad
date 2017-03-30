@@ -15,6 +15,7 @@
 #include "../gamepad/gamepad.h"
 #include "../gamepad/filetype_tpd.h"
 #include "../util/threadedObject.h"
+#include "../modules/broadcast.h"
 
 #include "serverCommon.h"
 #include "clientHandle.h"
@@ -47,6 +48,11 @@ namespace tedpad {
 		//Gets the gamepad that the server will modify on server_gamepadSync()
 		Gamepad *get_gamepad() const;
 
+		//Set the port that the server will run on
+		void set_port(uint16_t const port);
+		//Get the port that the server is running on
+		uint16_t get_port() const;
+
 		//Retrieves a description of the client that is pending connection
 		//ClientInfo get_pendingClient() const;
 
@@ -57,7 +63,7 @@ namespace tedpad {
 		void server_start();
 		//Stops all server operation
 		void server_stop();
-		//Syncronise the inter
+		//Syncronise the internal gamepad with the external gamepad
 		void server_gamepadSync();
 
 		Server(Gamepad *const gamepad = nullptr, bool const start = false);
@@ -90,6 +96,10 @@ namespace tedpad {
 		Gamepad pm_gamepad;
 		mutable std::mutex pmx_gamepad;
 
+		//The port that the server (or designator) will be running on
+		uint16_t pm_port = intern_server::Designator::Default_port;
+		mutable std::mutex pmx_port;
+
 		//The config parameters
 		eg::Param<Config_e> pm_config;
 		mutable std::mutex pmx_config;
@@ -100,10 +110,10 @@ namespace tedpad {
 
 		//Maybe use std::unique_ptr for these guys instead
 		//The designator
-		intern_server::Designator *pm_designator;
+		intern_server::Designator *pm_designator = nullptr;
 
 		//The broadcaster
-		intern_server::Broadcaster *pm_broadcaster;
+		intern_server::Broadcaster *pm_broadcaster = nullptr;
 
 		//A vector of the connected clientHandles
 		std::vector<intern_server::ClientHandle *> pm_connectedClient;
@@ -120,6 +130,7 @@ namespace tedpad {
 		void eventCallback_Designator_NewClient();
 		void eventCallback_ClientHandle_ClientDisconnected();
 		void eventCallback_Server_ConfigUpdate_Broadcast();
+		void eventCallback_Server_ValueUpdate_Port();
 
 		static std::map<intern_server::UpdateSignal::Event, void (Server:: *)()> map_eventCallback;
 	};

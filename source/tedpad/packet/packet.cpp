@@ -107,7 +107,7 @@ std::vector<tedpad::PacketModule> tedpad::FromNetworkPacket::get_packetModules()
 	auto itr_lastEnd = vec_data.begin();
 	while (true) {
 		//Search for the module begin string in the unsearched data (itr_lastEnd onwards)
-		auto itr_moduleBegin = std::search(itr_lastEnd, vec_data.end(), str_moduleBegin.begin(), str_moduleEnd.end());
+		auto itr_moduleBegin = std::search(itr_lastEnd, vec_data.end(), str_moduleBegin.begin(), str_moduleBegin.end());
 		//If there are no more begins, break
 		if (itr_moduleBegin >= vec_data.end())
 			break;
@@ -115,13 +115,23 @@ std::vector<tedpad::PacketModule> tedpad::FromNetworkPacket::get_packetModules()
 		//Create an iterator that can be used for data parsing
 		auto itr_moduleItr = itr_moduleBegin;
 
-		//Get the size of the located module data
-		uint32_t mod_size;
-		std::copy_n((itr_moduleItr += str_moduleBegin.size()), sizeof(uint32_t), reinterpret_cast<uint8_t *>(&mod_size));
-		mod_size = ntohl(mod_size);
+		//Move past the module begin string
+		itr_moduleItr = std::find(itr_moduleItr, vec_data.end(), '\0');
+		//Move past the terminator of the module being string
+		itr_moduleItr++;
 
-		//Increment the iterator the where there should be the module end string (+= sizeof(uint32_t) for when the module size was read)
-		itr_moduleItr += (sizeof(uint32_t) + mod_size);
+		//Move past the module name string
+		itr_moduleItr = std::find(itr_moduleItr, vec_data.end(), '\0');
+		//Move past the terminator of the module name string
+		itr_moduleItr++;
+
+		//Get the size of the located module data
+		uint16_t mod_size;
+		std::copy_n(itr_moduleItr, sizeof(mod_size), reinterpret_cast<uint8_t *>(&mod_size));
+		mod_size = ntohs(mod_size);
+
+		//Increment the iterator the where there should be the module end string (+= sizeof(uint16_t) for when the module size was read)
+		itr_moduleItr += (sizeof(mod_size) + mod_size);
 		//Create a iterator to where the end of the module (including end string) should be
 		auto itr_moduleEnd = itr_moduleItr + str_moduleEnd.size();
 		//If the ending string is found, add the module to rtrn

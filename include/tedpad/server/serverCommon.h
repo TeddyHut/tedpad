@@ -24,6 +24,7 @@ namespace tedpad {
 				Designator_NewClient,
 				ClientHandle_ClientDisconnected,
 				Server_ConfigUpdate_Broadcast,
+				Server_ValueUpdate_Port,
 			};
 			std::vector<Event> *eventQueue;
 			bool *request = nullptr;

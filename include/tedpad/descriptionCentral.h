@@ -30,6 +30,7 @@ namespace tedpad {
 				GamepadData,
 				Request,
 				Reply,
+				ServerDescription,
 			};
 		}
 	}

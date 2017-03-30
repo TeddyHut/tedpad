@@ -7,6 +7,7 @@
 #include "../socket.h"
 #include "serverCommon.h"
 #include "../modules/gamepadDescription.h"
+#include "../modules/broadcast.h"
 #include "../packet/packet.h"
 #include "../packet/packetModule.h"
 #include "../util/threadedObject.h"
@@ -20,7 +21,7 @@ namespace tedpad {
 		public:
 			static constexpr uint16_t Default_port = 3101;
 
-			Broadcaster(GamepadMutex const &gamepadMutex, uint16_t const port = Default_port, std::chrono::milliseconds const &updateRate = std::chrono::milliseconds(1000));
+			Broadcaster(GamepadMutex const &gamepadMutex, Module::ServerDescription const &serverDescription, uint16_t const port = Default_port, std::chrono::milliseconds const &updateRate = std::chrono::milliseconds(1000));
 		private:
 			GamepadMutex const pm_gamepadMutex;
 
@@ -30,6 +31,7 @@ namespace tedpad {
 			SOCKET pm_socket;
 			sockaddr_in pm_sockaddrDest;
 			Module::GamepadBriefDescription pm_gamepadDescription;
+			Module::ServerDescription pm_serverDescription;
 			
 			void thread_init() override;
 			void thread_main() override;

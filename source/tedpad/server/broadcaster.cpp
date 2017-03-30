@@ -1,6 +1,10 @@
 #include "../../../include/tedpad/server/broadcaster.h"
 
-tedpad::intern_server::Broadcaster::Broadcaster(GamepadMutex const & gamepadMutex, uint16_t const port, std::chrono::milliseconds const & updateRate) : pm_gamepadMutex(gamepadMutex), pm_port(port), SleepObject(updateRate)
+tedpad::intern_server::Broadcaster::Broadcaster(GamepadMutex const & gamepadMutex, Module::ServerDescription const &serverDescription, uint16_t const port, std::chrono::milliseconds const & updateRate) :
+	pm_gamepadMutex(gamepadMutex),
+	pm_serverDescription(serverDescription),
+	pm_port(port),
+	SleepObject(updateRate)
 {
 }
 
@@ -35,6 +39,8 @@ void tedpad::intern_server::Broadcaster::thread_init()
 void tedpad::intern_server::Broadcaster::thread_main()
 {
 	ToNetworkPacket toPacket;
+	
+	toPacket.add_module(pm_serverDescription.to_packetModule());
 	toPacket.add_module(pm_gamepadDescription.to_packetModule());
 	auto data = toPacket.get_fullPacketData();
 	int result = sendto(pm_socket, reinterpret_cast<char const *>(data.data()), static_cast<int>(data.size()), 0, reinterpret_cast<sockaddr const *>(&pm_sockaddrDest), sizeof(sockaddr));
