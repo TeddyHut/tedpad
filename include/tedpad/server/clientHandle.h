@@ -34,6 +34,7 @@ namespace tedpad {
 			ClientHandle(ClientHandle &&) = delete;
 
 			ClientHandle(ImplementationClientInfo const &socket, UpdateSignal const &updateSignal, GamepadMutex const &gamepadMutex, std::chrono::milliseconds const &updateRate = std::chrono::milliseconds(10));
+			//Maybe make a destructor that calls instruction_stop. Get a crash for some reason though (there's a locking problem)
 		private:
 			enum class State_e {
 				ClientDisconnected = 0,

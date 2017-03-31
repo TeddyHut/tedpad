@@ -62,16 +62,6 @@ tedpad::util::thread::ThreadedObject::ThreadedObject() : pm_instruction(2), pm_s
 	pm_state[State_e::ThreadFinished] = false;
 }
 
-tedpad::util::thread::ThreadedObject::~ThreadedObject()
-{
-	pmx_state.lock();
-	if (pm_state[State_e::ThreadRunning]) {
-		pmx_state.unlock();
-		instruction_stop();
-	}
-	pmx_state.unlock();
-}
-
 void tedpad::util::thread::ThreadedObject::thread_manage()
 {
 	while (true) {

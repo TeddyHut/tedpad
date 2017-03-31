@@ -43,7 +43,8 @@ namespace tedpad {
 				ThreadedObject &operator=(ThreadedObject &&p0) = delete;
 				ThreadedObject(ThreadedObject &&p0) = delete;
 				ThreadedObject();
-				virtual ~ThreadedObject();
+				//TODO: Investiage more into a pure virtual destructor ( = 0). It might mean that the derived classes will have to implement a descructor, and therefore have to call instruction_stop themselves.
+				virtual ~ThreadedObject() = default;
 			protected:
 				enum class Instruction_e {
 					Run_thread_init = 0,
