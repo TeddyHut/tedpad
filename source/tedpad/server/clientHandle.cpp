@@ -94,7 +94,7 @@ tedpad::ToNetworkPacket tedpad::intern_server::ClientHandle::requestCallback_Rec
 	std::lock_guard<std::mutex> lx_gamepad(*pm_gamepadMutex.mx_gamepad);
 	ToNetworkPacket toPacket;
 	toPacket.add_module(Module::Communication::Reply(Module::Communication::Reply_e::Send_GamepadData_DirectionOut).to_packetModule());
-	toPacket.add_module(pm_gamepadMutex.gamepad->get_gamepadData().to_packetModule());
+	toPacket.add_module(pm_gamepadMutex.gamepad->get_gamepadData_dataDirection(Module::Attribute::DataDirection::ServerOutput).to_packetModule());
 	return(toPacket);
 }
 
@@ -110,7 +110,7 @@ tedpad::ToNetworkPacket tedpad::intern_server::ClientHandle::requestCallback_Sen
 		std::lock_guard<std::mutex> lx_state(pmx_state);
 		std::lock_guard<std::mutex> lx_gamepad(*pm_gamepadMutex.mx_gamepad);
 		gamepadData.from_packetModule(*gamepadDataItr);
-		pm_gamepadMutex.gamepad->set_gamepadData(gamepadData);
+		pm_gamepadMutex.gamepad->set_gamepadData_dataDirection(gamepadData);
 	}
 	return(toPacket);
 }

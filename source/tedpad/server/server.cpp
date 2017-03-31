@@ -159,7 +159,10 @@ void tedpad::Server::thread_main()
 	std::sort(pm_eventQueue.begin(), pm_eventQueue.end());
 	pm_eventQueue.erase(std::unique(pm_eventQueue.begin(), pm_eventQueue.end()), pm_eventQueue.end());
 	//Apply the respective callback functions to the events
-	std::for_each(pm_eventQueue.begin(), pm_eventQueue.end(), [&](intern_server::UpdateSignal::Event const &p0) { (this->*map_eventCallback.at(p0))(); });
+	std::for_each(pm_eventQueue.begin(), pm_eventQueue.end(), [&](intern_server::UpdateSignal::Event const &p0) {
+		(this->*map_eventCallback.at(p0))(); });
+	//There are not more events now
+	pm_eventQueue.clear();
 	//Reset the request indicator
 	pm_request = false;
 	//Wait until there is an event
@@ -180,10 +183,10 @@ void tedpad::Server::eventCallback_Designator_NewClient()
 {
 	std::lock_guard<std::mutex> lx_state(pmx_state);
 	std::lock_guard<std::mutex> lx_connectedClient(pmx_connectedClient);
-	//This will run for as many clientsPending as there are, since one is removed each tiem get_pendingClientInfo is called
+	//This will run for as many clientsPending as there are, since one is removed each time get_pendingClientInfo is called
 	while (pm_designator->state_clientPending()) {
 		//Create a new dynamically allocated clienthandle and add it to the connecteClient vector
-		pm_connectedClient.emplace_back( new intern_server::ClientHandle(
+		pm_connectedClient.emplace_back(new intern_server::ClientHandle (
 			pm_designator->get_pendingClientInfo(true),
 			intern_server::UpdateSignal{ &pm_eventQueue, &pm_request, &pm_lock, &pm_signal },
 			intern_server::GamepadMutex{ &pm_gamepad, &pmx_gamepad }));
