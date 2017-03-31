@@ -35,7 +35,7 @@ namespace tedpad {
 			//The port to scan on
 			uint16_t port = intern_server::Broadcaster::Default_port;
 			//Whether to start and stop the socket service
-			bool const manageSocketService = false;
+			bool manageSocketService = false;
 		};
 		//Scan for servers for a duration of time
 		static std::vector<ServerInfo> scanForTime(ScanForTimeArgs const &args);

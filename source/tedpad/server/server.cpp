@@ -142,7 +142,7 @@ void tedpad::Server::thread_init()
 		exit(1);
 	}
 
-	serverDescription.ip = reinterpret_cast<sockaddr_in *>(ppResult->ai_addr)->sin_addr.s_addr;
+	serverDescription.ip = ntohl(reinterpret_cast<sockaddr_in *>(ppResult->ai_addr)->sin_addr.s_addr);
 
 	pm_broadcaster = new intern_server::Broadcaster(intern_server::GamepadMutex{ &pm_gamepad, &pmx_gamepad }, serverDescription);
 	//This will cause the event to be handled (and therefore the broadcaster setting set) in thread_main
