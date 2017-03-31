@@ -164,11 +164,13 @@ void tedpad::Server::thread_main()
 
 void tedpad::Server::thread_close()
 {
+	pm_broadcaster->instruction_stop();
 	delete pm_broadcaster;
+	pm_designator->instruction_stop();
 	delete pm_designator;
 	//Delete all clientHandles
 	std::for_each(pm_connectedClient.begin(), pm_connectedClient.end(),
-		[](intern_server::ClientHandle * const p0) { delete p0; });
+		[](intern_server::ClientHandle * const p0) { p0->instruction_stop();  delete p0; });
 	socket_service::shutdown();
 }
 
@@ -195,7 +197,7 @@ void tedpad::Server::eventCallback_ClientHandle_ClientDisconnected()
 		[](intern_server::ClientHandle * const p0) { return(p0->state_clientDisconnected()); });
 	//Delete the clients to be removed
 	std::for_each(remove_startItr, pm_connectedClient.end(),
-		[](intern_server::ClientHandle * const p0) { delete p0; });
+		[](intern_server::ClientHandle * const p0) { p0->instruction_stop(); delete p0; });
 	//Erease the pointers that were deleted
 	pm_connectedClient.erase(remove_startItr, pm_connectedClient.end());
 }

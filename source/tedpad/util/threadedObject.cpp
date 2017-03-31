@@ -41,7 +41,9 @@ void tedpad::util::thread::ThreadedObject::instruction_stop()
 		thread_close_preJoin();
 
 		//Wait for the thread to finish execution
+		pmx_thread.lock();
 		pm_thread.join();
+		pmx_thread.unlock();
 		pm_state[State_e::ThreadRunning] = false;
 	}
 }

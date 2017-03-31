@@ -54,6 +54,14 @@ void tedpad::intern_server::ClientHandle::thread_main()
 		pmx_state.lock();
 		pm_state[State_e::ClientDisconnected] = true;
 		pmx_state.unlock();
+		
+		//Alert the server that the client has disconnected
+		pm_updateSignal.lock->lock();
+		pm_updateSignal.eventQueue->push_back(UpdateSignal::Event::ClientHandle_ClientDisconnected);
+		*pm_updateSignal.request = true;
+		pm_updateSignal.signal->notify_all();
+		pm_updateSignal.lock->unlock();
+
 		//Block the thread until it is told to stop or the clientHandle is deleted
 		instruction_stop();
 	}

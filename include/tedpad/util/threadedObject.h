@@ -18,7 +18,8 @@
 //Calling instruction_stop while the thread is running from a different thread will set run_thread_close to true, and block until the thread has finished execution. It will then set ThreadRunning to false.
 //Calling instruction_stop while the thread is running from the same thread will cause the thread to set ThreadFinished to true, and block until instruction_stop is called from a different thread.
 //It will then resume in thread main and when returning to thread manage execute the thread_close function and terminate execution of the thread.
-//The destructor will call instruction_stop if the thread is running.
+//If the descructor is called before the thread stops, ATM it's undefined behaviour. The pure virtual functions will cause an exception (and normal virtual functions wont work) since it's a destructor.
+//Will need to come up with a function object way to do this one it seems
 
 //PLEASE BE AWARE that calling instruction_stop in thread main will return and continue execution in thread main. Only after it has left thread_main will the thread call thread_close and terminate.
 
