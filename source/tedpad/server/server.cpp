@@ -164,6 +164,7 @@ void tedpad::Server::thread_main()
 
 void tedpad::Server::thread_close()
 {
+	std::lock_guard<std::mutex> lx_connectedClient(pmx_config);
 	pm_broadcaster->instruction_stop();
 	delete pm_broadcaster;
 	pm_designator->instruction_stop();

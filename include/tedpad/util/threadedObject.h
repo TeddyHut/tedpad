@@ -23,6 +23,8 @@
 
 //PLEASE BE AWARE that calling instruction_stop in thread main will return and continue execution in thread main. Only after it has left thread_main will the thread call thread_close and terminate.
 
+//TODO: Fix the crash that occurs when the class is destructed without instruction_stop being called first (attempts to call pure virtual function thread_close)
+
 namespace tedpad {
 	namespace util {
 		namespace thread {
