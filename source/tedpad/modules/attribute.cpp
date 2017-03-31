@@ -23,7 +23,7 @@ void tedpad::Module::Attribute::Generic::from_packetModule(PacketModule const &p
 		description[Key::Module] = Value::Module::Invalid;
 		return;
 	}
-	attributeName = std::string(p0.data.begin(), itr);
+	attributeName = std::string(p0.data.begin() + 1, itr);
 	set_packetModuleData(std::vector<uint8_t>(++itr, p0.data.end()));
 }
 

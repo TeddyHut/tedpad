@@ -221,7 +221,7 @@ tedpad::PacketModule tedpad::Client::server_sendRecv(SOCKET const & v_socket, Mo
 	toPacket.add_module(mod_request);
 	
 	//If there is an extra packet to send with the request, add it on
-	if (!(Module::Name::get_description(sendmodule.name) == Value::Module::Invalid)) {
+	if (!(Module::Name::get_description(sendmodule.name)[Key::Module] & Value::Module::Invalid)) {
 		toPacket.add_module(sendmodule);
 	}
 
