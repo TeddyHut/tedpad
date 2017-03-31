@@ -120,7 +120,7 @@ namespace tedpad {
 		mutable std::mutex pmx_connectedClient;
 
 		//Need this to stop a deadlock when the thread stops: the thread will never leave thread_main without the updateSignal
-		void instruction_stop() override;
+		void thread_close_preJoin() override;
 
 		//Handles events from designator, broadcaster, and clientHandle.
 		void thread_init() override;

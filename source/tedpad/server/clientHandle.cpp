@@ -47,15 +47,15 @@ void tedpad::intern_server::ClientHandle::thread_main()
 			}
 		}
 	}
-	else if (bufferLen == 0) {
+	//If there was an error or the client disconnected
+	else if ((bufferLen == 0) ||
+		((socket_service::get_lastError() != socket_service::ERROR_EWOULDBLOCK) && (socket_service::get_lastError() != socket_service::ERROR_WAGAIN))
+	) {
 		pmx_state.lock();
 		pm_state[State_e::ClientDisconnected] = true;
 		pmx_state.unlock();
+		//Block the thread until it is told to stop or the clientHandle is deleted
 		instruction_stop();
-	}
-	else if ((socket_service::get_lastError() != socket_service::ERROR_EWOULDBLOCK) && (socket_service::get_lastError() != socket_service::ERROR_WAGAIN)) {
-		std::cerr << "tedpad::intern_server::ClientHandle::thread_main(): recv error" << std::endl;
-		exit(1);
 	}
 	else {
 		pmx_updateRate.lock();
@@ -67,16 +67,14 @@ void tedpad::intern_server::ClientHandle::thread_main()
 
 void tedpad::intern_server::ClientHandle::thread_init()
 {
-	socket_service::socket_setBlocking(pm_clientInfo.socket, false);
+	if (socket_service::socket_setBlocking(pm_clientInfo.socket, false)) {
+		std::cout << "tedpad::intern_server::ClientHandle::thread_init(): socket_setBlocking error" << std::endl;
+		exit(1);
+	}
 }
 
 void tedpad::intern_server::ClientHandle::thread_close()
 {
-	std::lock_guard<std::mutex> lx_updateSignal(*pm_updateSignal.lock);
-	pm_updateSignal.eventQueue->push_back(UpdateSignal::Event::ClientHandle_ClientDisconnected);
-	*pm_updateSignal.request = true;
-	pm_updateSignal.signal->notify_all();
-
 	closesocket(pm_clientInfo.socket);
 }
 

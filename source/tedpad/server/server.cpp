@@ -99,19 +99,12 @@ void tedpad::Server::server_gamepadSync()
 	pm_gamepad.set_gamepadData(pm_externalGamepad->get_gamepadData_dataDirection(Module::Attribute::DataDirection::ServerOutput));
 }
 
-void tedpad::Server::instruction_stop()
+void tedpad::Server::thread_close_preJoin()
 {
-	ThreadedObject::pmx_instruction.lock();
-	ThreadedObject::pm_instruction[ThreadedObject::Instruction_e::Run_thread_close] = true;
-	ThreadedObject::pmx_instruction.unlock();
-
 	pm_lock.lock();
 	pm_request = true;
 	pm_signal.notify_all();
 	pm_lock.unlock();
-
-	ThreadedObject::pm_thread.join();
-	ThreadedObject::pm_state[ThreadedObject::State_e::ThreadRunning] = false;
 }
 
 void tedpad::Server::thread_init()
