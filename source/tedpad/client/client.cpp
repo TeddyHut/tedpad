@@ -1,5 +1,4 @@
 #include "../../../include/tedpad/client/client.h"
-#include "..\..\..\include\tedpad\client\client.h"
 
 std::vector<tedpad::ServerInfo> tedpad::Client::scanForTime(ScanForTimeArgs const &args)
 {
@@ -90,6 +89,19 @@ std::vector<tedpad::ServerInfo> tedpad::Client::scanForTime(ScanForTimeArgs cons
 		socket_service::shutdown();
 
 	return(rtrn);
+}
+
+std::vector<tedpad::ServerInfo> tedpad::Client::filterScanResults(std::vector<ServerInfo> scanResults, FilterScanResultsArgs const & args)
+{
+	auto removeIf_p = [&](ServerInfo const &p0) {
+		return(!(
+			((args.filter & args.IP) ? (p0.ip == args.ip) : true) &&
+			((args.filter & args.PORT) ? (p0.port == args.port) : true) &&
+			((args.filter & args.NUMBEROFCLIENTS) ? (p0.numberOfClients == args.numberOfClients) : true) &&
+			((args.filter & args.GAMEPADNAME) ? (p0.gamepadDescription.gamepadName == args.gamepadName) : true)));
+	};
+	scanResults.erase(std::remove_if(scanResults.begin(), scanResults.end(), removeIf_p), scanResults.end());
+	return(scanResults);
 }
 
 tedpad::Module::GamepadFullDescription tedpad::Client::get_serverFullGamepadDescription(uint32_t const ip, uint16_t const port, bool const manageSocketService)

@@ -34,8 +34,28 @@ namespace tedpad {
 			//Whether to start and stop the socket service
 			bool manageSocketService = false;
 		};
+		//TODO: Make this more C++ like and less C like
+		struct FilterScanResultsArgs {
+			enum e {
+				IP = (1 << 0),
+				PORT = (1 << 1),
+				NUMBEROFCLIENTS = (1 << 2),
+				GAMEPADNAME = (1 << 3),
+			};
+			uint32_t ip = 0;
+			uint16_t port = 0;
+			uint16_t numberOfClients = 0;
+			std::string gamepadName;
+			uint8_t filter = 0;
+		};
 		//Scan for servers for a duration of time
 		static std::vector<ServerInfo> scanForTime(ScanForTimeArgs const &args);
+		//Maybe this should just take a reference and modify scanResults without returning anything.
+		static std::vector<ServerInfo> filterScanResults(std::vector<ServerInfo> scanResults, FilterScanResultsArgs const &args);
+
+		//Useful functions
+		static std::string ip_to_str(uint32_t const ip);
+		static uint32_t str_to_ip(std::string const &str);
 
 		//Connect to a server and get a gamepad full description from the server
 		static Module::GamepadFullDescription get_serverFullGamepadDescription(uint32_t const ip, uint16_t const port, bool const manageSocketService = false);
@@ -65,9 +85,6 @@ namespace tedpad {
 		static Module::GamepadData serverRequest_Receive_GamepadData_DirectionOut(SOCKET const &v_socket);
 		static void serverRequest_Send_GamepadData_DirecitonIn(SOCKET const &v_socket, Module::GamepadData const &gamepadData);
 		static PacketModule server_sendRecv(SOCKET const &v_socket, Module::Communication::Request_e const request, Module::Communication::Reply_e const reply, PacketModule const sendmodule = PacketModule());
-		
-		static std::string ip_to_str(uint32_t const ip);
-		static uint32_t str_to_ip(std::string const &str);
 
 		bool const pm_startedSocketService;
 		bool pm_connected = false;
