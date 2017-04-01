@@ -30,8 +30,11 @@ tedpad::intern_server::ImplementationClientInfo tedpad::intern_server::Designato
 
 void tedpad::intern_server::Designator::set_port(uint16_t const port)
 {
-	std::lock_guard<std::mutex> lx_port(pmx_port);
-	pm_port = port;
+	std::lock_guard<std::mutex> lx_state(ThreadedObject::pmx_state);
+	if (!ThreadedObject::pm_state[ThreadedObject::State_e::ThreadRunning]) {
+		std::lock_guard<std::mutex> lx_port(pmx_port);
+		pm_port = port;
+	}
 }
 
 uint16_t tedpad::intern_server::Designator::get_port() const

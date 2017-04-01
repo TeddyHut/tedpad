@@ -1,4 +1,5 @@
 #include "../../../include/tedpad/client/client.h"
+#include "..\..\..\include\tedpad\client\client.h"
 
 std::vector<tedpad::ServerInfo> tedpad::Client::scanForTime(ScanForTimeArgs const &args)
 {
@@ -120,10 +121,16 @@ void tedpad::Client::connectToServer(std::string const & ip, uint16_t const port
 {
 	pm_socket = get_connectedSocket(ip, port);
 	gamepad.from_gamepadFullDescription(serverRequest_Receive_GamepadFullDescription(pm_socket));
-	pm_serverInfo.gamepadDescription = gamepad.to_gamepadBriefDescription();
-	pm_serverInfo.ip = str_to_ip(ip);
-	pm_serverInfo.port = port;
 	pm_connected = true;
+}
+
+void tedpad::Client::disconnect()
+{
+	if (pm_connected) {
+		closesocket(pm_socket);
+		pm_socket = INVALID_SOCKET;
+		pm_connected = false;
+	}
 }
 
 void tedpad::Client::gamepadUpdate()
@@ -134,9 +141,17 @@ void tedpad::Client::gamepadUpdate()
 	}
 }
 
-tedpad::ServerInfo tedpad::Client::get_connectedServerInfo() const
+tedpad::ServerInfo tedpad::Client::get_connectedServerInfo()
 {
-	return(pm_serverInfo);
+	//TODO: Add an exception here that will throw if the client is not connected to a server
+	ServerInfo rtrn;
+	if (pm_connected) {
+		Module::ServerDescription mod_serverDescription;
+		mod_serverDescription.from_packetModule(server_sendRecv(pm_socket, Module::Communication::Request_e::Receive_ServerDescription, Module::Communication::Reply_e::Send_ServerDescription));
+		rtrn.fillFromServerDescription(mod_serverDescription);
+		rtrn.gamepadDescription = gamepad.to_gamepadBriefDescription();
+	}
+	return(rtrn);
 }
 
 tedpad::Client::Client(bool const start_socket_service) : pm_startedSocketService(start_socket_service)

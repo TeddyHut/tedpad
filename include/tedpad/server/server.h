@@ -16,6 +16,7 @@
 #include "../gamepad/filetype_tpd.h"
 #include "../util/threadedObject.h"
 #include "../modules/broadcast.h"
+#include "../user.h"
 
 #include "serverCommon.h"
 #include "clientHandle.h"
@@ -48,10 +49,13 @@ namespace tedpad {
 		//Gets the gamepad that the server will modify on server_gamepadSync()
 		Gamepad *get_gamepad() const;
 
-		//Set the port that the server will run on
+		//Set the port that the server will run on. Will do nothing if the server has already started.
 		void set_port(uint16_t const port);
 		//Get the port that the server is running on
 		uint16_t get_port() const;
+
+		//Gets the server info
+		ServerInfo get_serverInfo() const;
 
 		//Retrieves a description of the client that is pending connection
 		//ClientInfo get_pendingClient() const;
@@ -96,9 +100,8 @@ namespace tedpad {
 		Gamepad pm_gamepad;
 		mutable std::mutex pmx_gamepad;
 
-		//The port that the server (or designator) will be running on
+		//The port that the server (or designator) will be running on. Don't need a mutex since it's never modified after the server starts.
 		uint16_t pm_port = intern_server::Designator::Default_port;
-		mutable std::mutex pmx_port;
 
 		//The config parameters
 		eg::Param<Config_e> pm_config;
@@ -119,6 +122,8 @@ namespace tedpad {
 		std::vector<intern_server::ClientHandle *> pm_connectedClient;
 		mutable std::mutex pmx_connectedClient;
 
+		Module::ServerDescription generate_serverDescription() const;
+
 		//Need this to stop a deadlock when the thread stops: the thread will never leave thread_main without the updateSignal
 		void thread_close_preJoin() override;
 
@@ -131,6 +136,7 @@ namespace tedpad {
 		void eventCallback_ClientHandle_ClientDisconnected();
 		void eventCallback_Server_ConfigUpdate_Broadcast();
 		void eventCallback_Server_ValueUpdate_Port();
+		void eventCallback_Server_ValueUpdate_ServerDescription();
 
 		static std::map<intern_server::UpdateSignal::Event, void (Server:: *)()> map_eventCallback;
 	};

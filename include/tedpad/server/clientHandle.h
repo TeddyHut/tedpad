@@ -13,6 +13,7 @@
 #include "../modules/communication.h"
 #include "../modules/gamepadData.h"
 #include "../modules/gamepadDescription.h"
+#include "../modules/broadcast.h"
 #include "../packet/packet.h"
 #include "../packet/packetModule.h"
 #include "../util/threadedObject.h"
@@ -27,13 +28,15 @@ namespace tedpad {
 
 			ImplementationClientInfo get_clientInfo() const;
 
+			void set_serverDescription(Module::ServerDescription const &serverDescription);
+
 			//Can't have any of these: see "threadedObject"
 			ClientHandle &operator=(ClientHandle const &) = delete;
 			ClientHandle(ClientHandle const &) = delete;
 			ClientHandle &operator=(ClientHandle &&) = delete;
 			ClientHandle(ClientHandle &&) = delete;
 
-			ClientHandle(ImplementationClientInfo const &socket, UpdateSignal const &updateSignal, GamepadMutex const &gamepadMutex, std::chrono::milliseconds const &updateRate = std::chrono::milliseconds(10));
+			ClientHandle(ImplementationClientInfo const &socket, UpdateSignal const &updateSignal, GamepadMutex const &gamepadMutex, Module::ServerDescription const &serverDescription, std::chrono::milliseconds const &updateRate = std::chrono::milliseconds(10));
 			//Maybe make a destructor that calls instruction_stop. Get a crash for some reason though (there's a locking problem)
 		private:
 			enum class State_e {
@@ -50,11 +53,15 @@ namespace tedpad {
 			ImplementationClientInfo const pm_clientInfo;
 			mutable std::mutex pmx_clientInfo;
 
+			Module::ServerDescription pm_serverDescription;
+			mutable std::mutex pmx_serverDescription;
+
 			void thread_init() override;
 			void thread_main() override;
 			void thread_close() override;
 
 			ToNetworkPacket requestCallback_Receive_GamepadFullDescription(FromNetworkPacket const &fromPacket);
+			ToNetworkPacket requestCallback_Receive_ServerDescription(FromNetworkPacket const &fromPacket);
 			ToNetworkPacket requestCallback_Receive_GamepadData_DirectionOut(FromNetworkPacket const &fromPacket);
 			ToNetworkPacket requestCallback_Send_GamepadData_DirectionIn(FromNetworkPacket const &fromPacket);
 			ToNetworkPacket requestCallback_Ping(FromNetworkPacket const &fromPacket);

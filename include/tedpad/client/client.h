@@ -15,16 +15,13 @@
 #include "../modules/broadcast.h"
 #include "../server/broadcaster.h"
 #include "../packet/packet.h"
+#include "../user.h"
 
 //This whole thing is super simple. I should probably make it a little more complicated.
 //It's also very C-like... probably should do something about that
+//TODO: Consider adding GamepadBriefDescription to Module::ServerDescription. That way the GamepadBriefDescription doesn't have to be sourced throught strange approaches.
 
 namespace tedpad {
-	struct ServerInfo {
-		Module::GamepadBriefDescription gamepadDescription;
-		uint32_t ip;
-		uint16_t port;
-	};
 	class Client {
 	public:
 		struct ScanForTimeArgs {
@@ -47,12 +44,15 @@ namespace tedpad {
 		//Connect to a server
 		void connectToServer(uint32_t const ip, uint16_t const port);
 		void connectToServer(std::string const &ip, uint16_t const port);
+
+		//Disconnect from a server if currently connected
+		void disconnect();
 		
 		//Update and retreive gamepad values from the server
 		void gamepadUpdate();
 		
-		//Get the server that the client is connected to
-		ServerInfo get_connectedServerInfo() const;
+		//Request and update the ServerInfo from the server. Will return the serverInfo
+		ServerInfo get_connectedServerInfo();
 		
 		Gamepad gamepad;
 
@@ -72,6 +72,5 @@ namespace tedpad {
 		bool const pm_startedSocketService;
 		bool pm_connected = false;
 		SOCKET pm_socket;
-		ServerInfo pm_serverInfo;
 	};
 }

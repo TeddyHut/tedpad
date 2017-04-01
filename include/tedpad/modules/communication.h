@@ -10,6 +10,7 @@ namespace tedpad {
 		namespace Communication {
 			enum class Request_e : uint8_t {
 				Receive_GamepadFullDescription = 0,
+				Receive_ServerDescription,
 				Receive_GamepadData_DirectionOut,
 				Send_GamepadData_DirectionIn,
 				Ping,
@@ -17,6 +18,7 @@ namespace tedpad {
 			enum class Reply_e : uint8_t {
 				Send_GamepadFullDescription = 0,
 				Send_GamepadData_DirectionOut,
+				Send_ServerDescription,
 				Receive_GamepadData_DirectionIn,
 				Acknowledge,
 			};

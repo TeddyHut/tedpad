@@ -12,11 +12,18 @@ tedpad::intern_server::ImplementationClientInfo tedpad::intern_server::ClientHan
 	return(pm_clientInfo);
 }
 
-tedpad::intern_server::ClientHandle::ClientHandle(ImplementationClientInfo const &clientInfo, UpdateSignal const &updateSignal, GamepadMutex const &gamepadMutex, std::chrono::milliseconds const &updateRate) :
+void tedpad::intern_server::ClientHandle::set_serverDescription(Module::ServerDescription const & serverDescription)
+{
+	std::lock_guard<std::mutex> lx_serverDescription(pmx_serverDescription);
+	pm_serverDescription = serverDescription;
+}
+
+tedpad::intern_server::ClientHandle::ClientHandle(ImplementationClientInfo const &clientInfo, UpdateSignal const &updateSignal, GamepadMutex const &gamepadMutex, Module::ServerDescription const &serverDescription, std::chrono::milliseconds const &updateRate) :
 	pm_state(1),
 	pm_clientInfo(clientInfo),
 	pm_updateSignal(updateSignal),
 	pm_gamepadMutex(gamepadMutex),
+	pm_serverDescription(serverDescription),
 	SleepObject(updateRate)
 {
 	if (pm_updateSignal.filled() && pm_gamepadMutex.filled())
@@ -95,6 +102,15 @@ tedpad::ToNetworkPacket tedpad::intern_server::ClientHandle::requestCallback_Rec
 	return(toPacket);
 }
 
+tedpad::ToNetworkPacket tedpad::intern_server::ClientHandle::requestCallback_Receive_ServerDescription(FromNetworkPacket const & fromPacket)
+{
+	std::lock_guard<std::mutex> lx_serverDescription(pmx_serverDescription);
+	ToNetworkPacket toPacket;
+	toPacket.add_module(Module::Communication::Reply(Module::Communication::Reply_e::Send_ServerDescription).to_packetModule());
+	toPacket.add_module(pm_serverDescription.to_packetModule());
+	return(toPacket);
+}
+
 tedpad::ToNetworkPacket tedpad::intern_server::ClientHandle::requestCallback_Receive_GamepadData_DirectionOut(FromNetworkPacket const & fromPacket)
 {
 	std::lock_guard<std::mutex> lx_gamepad(*pm_gamepadMutex.mx_gamepad);
@@ -130,6 +146,7 @@ tedpad::ToNetworkPacket tedpad::intern_server::ClientHandle::requestCallback_Pin
 
 std::map <tedpad::Module::Communication::Request_e, tedpad::ToNetworkPacket(tedpad::intern_server::ClientHandle::*)(tedpad::FromNetworkPacket const &)> tedpad::intern_server::ClientHandle::requestCallback_map = {
 	{ tedpad::Module::Communication::Request_e::Receive_GamepadFullDescription, &tedpad::intern_server::ClientHandle::requestCallback_Receive_GamepadFullDescription},
+	{ tedpad::Module::Communication::Request_e::Receive_ServerDescription, &tedpad::intern_server::ClientHandle::requestCallback_Receive_ServerDescription },
 	{ tedpad::Module::Communication::Request_e::Receive_GamepadData_DirectionOut, &tedpad::intern_server::ClientHandle::requestCallback_Receive_GamepadData_DirectionOut },
 	{ tedpad::Module::Communication::Request_e::Send_GamepadData_DirectionIn, &tedpad::intern_server::ClientHandle::requestCallback_Send_GamepadData_DirectionIn },
 	{ tedpad::Module::Communication::Request_e::Ping, &tedpad::intern_server::ClientHandle::requestCallback_Ping }

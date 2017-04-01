@@ -27,6 +27,7 @@ namespace tedpad {
 			ImplementationClientInfo get_pendingClientInfo(bool const forget = true);
 			ImplementationClientInfo get_pendingClientInfo() const;
 
+			//Will not work if the designator has already started
 			void set_port(uint16_t const port);
 			uint16_t get_port() const;
 

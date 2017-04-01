@@ -4,3 +4,4 @@
 #include "tedpad/gamepad/gamepad.h"
 #include "tedpad/server/server.h"
 #include "tedpad/client/client.h"
+#include "tedpad/user.h"

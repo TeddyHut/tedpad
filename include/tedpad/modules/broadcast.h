@@ -13,6 +13,7 @@ namespace tedpad {
 
 			uint32_t ip;
 			uint16_t port;
+			uint16_t number_clientsConnected;
 
 			ServerDescription();
 		};

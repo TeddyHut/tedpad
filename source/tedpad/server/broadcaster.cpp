@@ -1,4 +1,11 @@
 #include "../../../include/tedpad/server/broadcaster.h"
+#include "..\..\..\include\tedpad\server\broadcaster.h"
+
+void tedpad::intern_server::Broadcaster::set_serverDescription(Module::ServerDescription const & serverDescription)
+{
+	std::lock_guard<std::mutex> lx_serverDescription(pmx_serverDescription);
+	pm_serverDescription = serverDescription;
+}
 
 tedpad::intern_server::Broadcaster::Broadcaster(GamepadMutex const & gamepadMutex, Module::ServerDescription const &serverDescription, uint16_t const port, std::chrono::milliseconds const & updateRate) :
 	pm_gamepadMutex(gamepadMutex),
@@ -10,7 +17,6 @@ tedpad::intern_server::Broadcaster::Broadcaster(GamepadMutex const & gamepadMute
 
 void tedpad::intern_server::Broadcaster::thread_init()
 {
-	std::lock_guard<std::mutex> lx_port(pmx_port);
 	std::lock_guard<std::mutex> lx_gamepad(*pm_gamepadMutex.mx_gamepad);
 
 	int result;

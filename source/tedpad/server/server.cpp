@@ -60,18 +60,30 @@ tedpad::Gamepad * tedpad::Server::get_gamepad() const
 
 void tedpad::Server::set_port(uint16_t const port)
 {
-	std::lock_guard<std::mutex> lx_port(pmx_port);
-	std::lock_guard<std::mutex> lx_lock(pm_lock);
-	pm_port = port;
-	pm_eventQueue.push_back(intern_server::UpdateSignal::Event::Server_ValueUpdate_Port);
-	pm_request = true;
-	pm_signal.notify_all();
+	std::lock_guard<std::mutex> lx_state(ThreadedObject::pmx_state);
+	//Make sure that the server isn't already runnning
+	if (!ThreadedObject::pm_state[ThreadedObject::State_e::ThreadRunning]) {
+		std::lock_guard<std::mutex> lx_lock(pm_lock);
+		pm_port = port;
+	}
+	//Add an exception here (when learned) that will throw if the server was already running
 }
 
 uint16_t tedpad::Server::get_port() const
 {
-	std::lock_guard<std::mutex> lx_port(pmx_port);
 	return(pm_port);
+}
+
+tedpad::ServerInfo tedpad::Server::get_serverInfo() const
+{
+	std::lock_guard<std::mutex> lx_gamepad(pmx_gamepad);
+	ServerInfo rtrn;
+	auto serverDescription = generate_serverDescription();
+	rtrn.ip = serverDescription.ip;
+	rtrn.port = serverDescription.port;
+	rtrn.numberOfClients = serverDescription.number_clientsConnected;
+	rtrn.gamepadDescription = pm_gamepad.to_gamepadBriefDescription();
+	return(rtrn);
 }
 
 std::vector<tedpad::ClientInfo> tedpad::Server::get_connectedClients() const
@@ -99,6 +111,35 @@ void tedpad::Server::server_gamepadSync()
 	pm_gamepad.set_gamepadData(pm_externalGamepad->get_gamepadData_dataDirection(Module::Attribute::DataDirection::ServerOutput));
 }
 
+tedpad::Module::ServerDescription tedpad::Server::generate_serverDescription() const
+{
+	Module::ServerDescription rtrn;
+	
+	//Get the IP address of the server/host
+	char hostName[128];
+	if (gethostname(hostName, sizeof(hostName)) == -1) {
+		std::cout << "tedpad::Server::generate_serverDescription(): gethostname error" << std::endl;
+		exit(1);
+	}
+	addrinfo hints, *ppResult;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_CANONNAME;
+	int result = getaddrinfo(hostName, NULL, &hints, &ppResult);
+	if (result != 0) {
+		std::cout << "tedpad::Server::generate_serverDescription(): getaddrinfo error: " << gai_strerror(result) << std::endl;
+		exit(1);
+	}
+
+	//Set the values
+	rtrn.ip = ntohl(reinterpret_cast<sockaddr_in *>(ppResult->ai_addr)->sin_addr.s_addr);
+	rtrn.port = pm_port;
+	//Might need to lock connected client here.
+	rtrn.number_clientsConnected = static_cast<uint16_t>(get_connectedClients().size());
+	return(rtrn);
+}
+
 void tedpad::Server::thread_close_preJoin()
 {
 	pm_lock.lock();
@@ -114,48 +155,31 @@ void tedpad::Server::thread_init()
 	std::lock_guard<std::mutex> lx_updateSignal(pm_lock);
 	if (!status_gamepadSet())
 		return;
-	
-	Module::ServerDescription serverDescription;
-	serverDescription.port = pm_port;
-	//Going in all C -_-
-	char hostName[128];
-	if (gethostname(hostName, sizeof(hostName)) == -1) {
-		std::cout << "tedpad::Server::thread_init(): gethostname error" << std::endl;
-		exit(1);
-	}
-	addrinfo hints, *ppResult;
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_CANONNAME;
-	int result = getaddrinfo(hostName, NULL, &hints, &ppResult);
 
-	if (result != 0) {
-		std::cout << "tedpad::Server::thread_init(): getaddrinfo error: " << gai_strerror(result) << std::endl;
-		exit(1);
-	}
-
-	serverDescription.ip = ntohl(reinterpret_cast<sockaddr_in *>(ppResult->ai_addr)->sin_addr.s_addr);
-
-	pm_broadcaster = new intern_server::Broadcaster(intern_server::GamepadMutex{ &pm_gamepad, &pmx_gamepad }, serverDescription);
+	pm_broadcaster = new intern_server::Broadcaster(intern_server::GamepadMutex{ &pm_gamepad, &pmx_gamepad }, generate_serverDescription());
 	//This will cause the event to be handled (and therefore the broadcaster setting set) in thread_main
 	pm_eventQueue.push_back(intern_server::UpdateSignal::Event::Server_ConfigUpdate_Broadcast);
 
-	pm_designator = new intern_server::Designator(intern_server::UpdateSignal{ &pm_eventQueue, &pm_request, &pm_lock, &pm_signal });
+	pm_designator = new intern_server::Designator(intern_server::UpdateSignal{ &pm_eventQueue, &pm_request, &pm_lock, &pm_signal }, pm_port);
 	pm_designator->instruction_start();
 }
 
 void tedpad::Server::thread_main()
 {
 	std::unique_lock<std::mutex> lx_lock(pm_lock);
-	//Make it so that there is only one of each event
-	std::sort(pm_eventQueue.begin(), pm_eventQueue.end());
-	pm_eventQueue.erase(std::unique(pm_eventQueue.begin(), pm_eventQueue.end()), pm_eventQueue.end());
-	//Apply the respective callback functions to the events
-	std::for_each(pm_eventQueue.begin(), pm_eventQueue.end(), [&](intern_server::UpdateSignal::Event const &p0) {
-		(this->*map_eventCallback.at(p0))(); });
-	//There are not more events now
-	pm_eventQueue.clear();
+	while (pm_eventQueue.size() > 0) {
+		//Make it so that there is only one of each event
+		std::sort(pm_eventQueue.begin(), pm_eventQueue.end());
+		pm_eventQueue.erase(std::unique(pm_eventQueue.begin(), pm_eventQueue.end()), pm_eventQueue.end());
+		//Get the iterator to the current end of the queue
+		auto queueEndItr = pm_eventQueue.end();
+		//Apply the respective callback functions to the events
+		std::for_each(pm_eventQueue.begin(), pm_eventQueue.end(), [&](intern_server::UpdateSignal::Event const &p0) {
+			(this->*map_eventCallback.at(p0))(); });
+		//Erase the event that were handled
+		pm_eventQueue.erase(pm_eventQueue.begin(), queueEndItr);
+		//If more events were added in the callback functions, they should still be there ready to be handled and the loop will repeat until there are not more events.
+	}
 	//Reset the request indicator
 	pm_request = false;
 	//Wait until there is an event
@@ -185,9 +209,13 @@ void tedpad::Server::eventCallback_Designator_NewClient()
 		pm_connectedClient.emplace_back(new intern_server::ClientHandle (
 			pm_designator->get_pendingClientInfo(true),
 			intern_server::UpdateSignal{ &pm_eventQueue, &pm_request, &pm_lock, &pm_signal },
-			intern_server::GamepadMutex{ &pm_gamepad, &pmx_gamepad }));
+			intern_server::GamepadMutex{ &pm_gamepad, &pmx_gamepad },
+			generate_serverDescription()));
 	}
+
 	pm_state[State_e::ClientPending] = false;
+	//Only need to do push back since this is a callback function
+	pm_eventQueue.push_back(intern_server::UpdateSignal::Event::Server_ValueUpdate_ServerDescription);
 }
 
 void tedpad::Server::eventCallback_ClientHandle_ClientDisconnected()
@@ -201,6 +229,8 @@ void tedpad::Server::eventCallback_ClientHandle_ClientDisconnected()
 		[](intern_server::ClientHandle * const p0) { p0->instruction_stop(); delete p0; });
 	//Erease the pointers that were deleted
 	pm_connectedClient.erase(remove_startItr, pm_connectedClient.end());
+	//Changing the number of clients means an update to the server description.
+	pm_eventQueue.push_back(intern_server::UpdateSignal::Event::Server_ValueUpdate_ServerDescription);
 }
 
 void tedpad::Server::eventCallback_Server_ConfigUpdate_Broadcast()
@@ -217,10 +247,15 @@ void tedpad::Server::eventCallback_Server_ConfigUpdate_Broadcast()
 
 void tedpad::Server::eventCallback_Server_ValueUpdate_Port()
 {
-	std::lock_guard<std::mutex> lx_port(pmx_port);
-	if (pm_designator != nullptr) {
-		pm_designator->set_port(pm_port);
-	}
+	//Well this is redunant, since it can't be changed once the thread is runnigng. Keep in case I make it able to change later.
+}
+
+void tedpad::Server::eventCallback_Server_ValueUpdate_ServerDescription()
+{
+	std::lock_guard<std::mutex> lx_connectedClient(pmx_connectedClient);
+	auto serverDescription = generate_serverDescription();
+	pm_broadcaster->set_serverDescription(serverDescription);
+	std::for_each(pm_connectedClient.begin(), pm_connectedClient.end(), [&](intern_server::ClientHandle * const p0) { p0->set_serverDescription(serverDescription); });
 }
 
 tedpad::Server::Server(Gamepad * const gamepad, bool const start) : pm_config(3), pm_state(2)
