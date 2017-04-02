@@ -136,7 +136,7 @@ tedpad::Module::ServerDescription tedpad::Server::generate_serverDescription() c
 	rtrn.ip = ntohl(reinterpret_cast<sockaddr_in *>(ppResult->ai_addr)->sin_addr.s_addr);
 	rtrn.port = pm_port;
 	//Might need to lock connected client here.
-	rtrn.number_clientsConnected = static_cast<uint16_t>(get_connectedClients().size());
+	rtrn.number_clientsConnected = static_cast<uint16_t>(pm_connectedClient.size());
 	return(rtrn);
 }
 
@@ -168,16 +168,16 @@ void tedpad::Server::thread_main()
 {
 	std::unique_lock<std::mutex> lx_lock(pm_lock);
 	while (pm_eventQueue.size() > 0) {
-		//Make it so that there is only one of each event
+		//Make it so that there is only one of each type of event
 		std::sort(pm_eventQueue.begin(), pm_eventQueue.end());
 		pm_eventQueue.erase(std::unique(pm_eventQueue.begin(), pm_eventQueue.end()), pm_eventQueue.end());
-		//Get the iterator to the current end of the queue
-		auto queueEndItr = pm_eventQueue.end();
+		//Make a copy of the event queue so that if callbacks add to it everything still works smoothly
+		auto eventQueue_copy = pm_eventQueue;
+		//Clear the event queue so that if new things are added it can be easily detected
+		pm_eventQueue.clear();
 		//Apply the respective callback functions to the events
-		std::for_each(pm_eventQueue.begin(), pm_eventQueue.end(), [&](intern_server::UpdateSignal::Event const &p0) {
+		std::for_each(eventQueue_copy.begin(), eventQueue_copy.end(), [&](intern_server::UpdateSignal::Event const &p0) {
 			(this->*map_eventCallback.at(p0))(); });
-		//Erase the event that were handled
-		pm_eventQueue.erase(pm_eventQueue.begin(), queueEndItr);
 		//If more events were added in the callback functions, they should still be there ready to be handled and the loop will repeat until there are not more events.
 	}
 	//Reset the request indicator
@@ -281,5 +281,6 @@ std::map<tedpad::intern_server::UpdateSignal::Event, void (tedpad::Server:: *)()
 	{ intern_server::UpdateSignal::Event::Designator_NewClient, &eventCallback_Designator_NewClient },
 	{ intern_server::UpdateSignal::Event::ClientHandle_ClientDisconnected, &eventCallback_ClientHandle_ClientDisconnected },
 	{ intern_server::UpdateSignal::Event::Server_ConfigUpdate_Broadcast, &eventCallback_Server_ConfigUpdate_Broadcast },
-	{ intern_server::UpdateSignal::Event::Server_ValueUpdate_Port, &eventCallback_Server_ValueUpdate_Port }
+	{ intern_server::UpdateSignal::Event::Server_ValueUpdate_Port, &eventCallback_Server_ValueUpdate_Port },
+	{ intern_server::UpdateSignal::Event::Server_ValueUpdate_ServerDescription, &eventCallback_Server_ValueUpdate_ServerDescription }
 };

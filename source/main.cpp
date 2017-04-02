@@ -37,10 +37,10 @@ int main(int argc, char *argv[]) {
 	while (true) {
 		gamepad.Set_attribute("DigitalOut", true);
 		server.server_gamepadSync();
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 		gamepad.Set_attribute("DigitalOut", false);
 		server.server_gamepadSync();
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 		connectedClient_num = server.get_connectedClients().size();
 		if (connectedClient_num != connectedClient_numOld) {
 			std::cout << "No. Clients Connected " << connectedClient_num << std::endl;
