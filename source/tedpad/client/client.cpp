@@ -61,11 +61,15 @@ std::vector<tedpad::ServerInfo> tedpad::Client::scanForTime(ScanForTimeArgs cons
 					Module::ServerDescription serverDescription;
 					Module::GamepadBriefDescription gamepadDescription;
 					serverDescription.from_packetModule(packetModules.at(0));
+					gamepadDescription.from_packetModule(packetModules.at(1));
+					ServerInfo serverInfo{ gamepadDescription, serverDescription.ip, serverDescription.port, serverDescription.number_clientsConnected };
+					auto findItr = std::find_if(rtrn.begin(), rtrn.end(), [&](ServerInfo const &p0) { return((p0.ip == serverDescription.ip) && (p0.port == serverDescription.port)); });
 					//If the server hasn't already been found, add it to rtrn
-					if (std::find_if(rtrn.begin(), rtrn.end(), [&](ServerInfo const &p0) { return((p0.ip == serverDescription.ip) && (p0.port == serverDescription.port)); }) == rtrn.end()) {
-						gamepadDescription.from_packetModule(packetModules.at(1));
-						rtrn.push_back(ServerInfo{ gamepadDescription, serverDescription.ip, serverDescription.port });
-					}
+					if (findItr == rtrn.end())
+						rtrn.push_back(serverInfo);
+					//If it has, replace the one that is there since this one will be more recent
+					else
+						*findItr = serverInfo;
 				}
 			}
 			else if (recv_len == 0) {
