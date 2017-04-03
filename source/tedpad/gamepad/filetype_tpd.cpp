@@ -1,72 +1,27 @@
 #include "../../../include/tedpad/gamepad/filetype_tpd.h"
 
-std::map<tedpad::File::GamepadFullDescription_tpd::Token const, std::string const> const tedpad::File::GamepadFullDescription_tpd::map_token {
-	{ Token::Name, "name" },
-	{ Token::Type, "type" },
-	{ Token::Direction, "direction" },
-	{ Token::Assign, "=" },
-	{ Token::AttributeBegin, "attribute_begin" },
-	{ Token::AttributeEnd, "attribute_end" },
-	{ Token::Quotation, "\""},
+std::map<tedpad::File::TPD_to_GamepadFullDescription_dec::Token const, std::string const> const tedpad::File::TPD_to_GamepadFullDescription_dec::map_token {
+	{ tedpad::File::TPD_to_GamepadFullDescription_dec::Token::Name, "name" },
+	{ tedpad::File::TPD_to_GamepadFullDescription_dec::Token::Type, "type" },
+	{ tedpad::File::TPD_to_GamepadFullDescription_dec::Token::Direction, "direction" },
+	{ tedpad::File::TPD_to_GamepadFullDescription_dec::Token::Assign, "=" },
+	{ tedpad::File::TPD_to_GamepadFullDescription_dec::Token::AttributeBegin, "attribute_begin" },
+	{ tedpad::File::TPD_to_GamepadFullDescription_dec::Token::AttributeEnd, "attribute_end" },
+	{ tedpad::File::TPD_to_GamepadFullDescription_dec::Token::Quotation, "\""},
 };
 
-tedpad::File::TPD_to_GamepadFullDescription::TPD_to_GamepadFullDescription(uint8_t const * const ptr, size_t const len)
+tedpad::File::TPD_to_GamepadFullDescription_dec::TPD_to_GamepadFullDescription::TPD_to_GamepadFullDescription(std::string const &text)
 {
-	generate_tokens(ptr, len);
+	generate_tokens(text);
 	generate_gamepadFullDescription();
 }
 
-tedpad::File::TPD_to_GamepadFullDescription::operator tedpad::Module::GamepadFullDescription() const
+tedpad::File::TPD_to_GamepadFullDescription_dec::TPD_to_GamepadFullDescription::operator tedpad::Module::GamepadFullDescription() const
 {
 	return(value);
 }
 
-tedpad::File::GamepadFullDescription_tpd::Token tedpad::File::TPD_to_GamepadFullDescription::str_to_token(std::string const & p0) const
-{
-	auto itr = std::find_if(map_token.begin(), map_token.end(), [&](std::pair<Token const, std::string const> const &p1) { return(p1.second == p0); });
-	if (itr == map_token.end())
-		return(Token::Invalid);
-	return((*itr).first);
-}
-
-//Note: There is probably a glitch where a quote with a leading space " xx" will not register the leading space. There might also be a glitch where a proceeding whitespace isn't registered "xx "
-void tedpad::File::TPD_to_GamepadFullDescription::generate_tokens(uint8_t const * const ptr, size_t const len)
-{
-	vec_token.clear();
-	vec_str.clear();
-	std::stringstream content(std::string(reinterpret_cast<char const *>(ptr), len));
-	while (!content.eof()) {
-		std::string segment;
-		content >> segment;
-		size_t quoteBegin_pos = segment.find(map_token.at(Token::Quotation));
-		if (quoteBegin_pos != std::string::npos) {
-			std::string quote_str = segment;
-			size_t quoteEnd_pos = quote_str.rfind(map_token.at(Token::Quotation));
-			if (quoteEnd_pos != quoteBegin_pos) {
-				quote_str = quote_str.substr(quoteBegin_pos + 1, quoteEnd_pos - quoteBegin_pos - 1);
-			}
-			else {
-				quote_str = quote_str.substr(quoteBegin_pos + 1);
-				std::getline(content, segment, map_token.at(Token::Quotation).at(0));
-				quote_str += segment;
-			}
-			vec_token.push_back(Token::Quotation);
-			vec_token.push_back(Token::StrPlaceholder);
-			vec_token.push_back(Token::Quotation);
-			vec_str.push_back(quote_str);
-		}
-		else {
-			auto token = str_to_token(segment);
-			if (token == Token::Invalid) {
-				vec_str.push_back(segment);
-				token = Token::StrPlaceholder;
-			}
-			vec_token.push_back(token);
-		}
-	}
-}
-
-void tedpad::File::TPD_to_GamepadFullDescription::generate_gamepadFullDescription()
+void tedpad::File::TPD_to_GamepadFullDescription_dec::TPD_to_GamepadFullDescription::generate_gamepadFullDescription()
 {
 	//The current scope of the values (eg, could be inside an attribute with "attribute_begin")
 	enum class Scope : uint8_t {

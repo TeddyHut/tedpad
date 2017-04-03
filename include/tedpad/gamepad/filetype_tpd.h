@@ -8,13 +8,13 @@
 #include <functional>
 
 #include "../modules/gamepadDescription.h"
+#include "../../../engine/include/eg/eg_engine.h"
 
 namespace tedpad {
 	namespace File {
-		class GamepadFullDescription_tpd {
-		protected:
+		namespace TPD_to_GamepadFullDescription_dec {
 			enum class Token {
-				Name, 
+				Name,
 				Type,
 				Direction,
 				Assign,
@@ -24,23 +24,18 @@ namespace tedpad {
 				StrPlaceholder,
 				Invalid,
 			};
-			static std::map<Token const, std::string const> const map_token;
-
-			std::vector<Token> vec_token;
-			std::vector<std::string> vec_str;
-		};
-
-		class TPD_to_GamepadFullDescription : public GamepadFullDescription_tpd {
-		public:
-			TPD_to_GamepadFullDescription(uint8_t const *const ptr, size_t const len);
-			//TODO: Maybe an rvalue version for this?
-			operator tedpad::Module::GamepadFullDescription() const;
-		private:
-			Token str_to_token(std::string const &p0) const;
-			void generate_tokens(uint8_t const *const ptr, size_t const len);
-			void generate_gamepadFullDescription();
-
-			Module::GamepadFullDescription value;
-		};
+			extern std::map<Token const, std::string const> const map_token;
+			
+			class TPD_to_GamepadFullDescription : public eg::util::TextParse<Token, map_token> {
+			public:
+				TPD_to_GamepadFullDescription(std::string const &text);
+				//TODO: Maybe an rvalue version for this?
+				operator tedpad::Module::GamepadFullDescription() const;
+			private:
+				void generate_gamepadFullDescription();
+				Module::GamepadFullDescription value;
+			};
+		}
+		using TPD_to_GamepadFullDescription = TPD_to_GamepadFullDescription_dec::TPD_to_GamepadFullDescription;
 	}
 }

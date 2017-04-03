@@ -101,22 +101,22 @@ bool tedpad::Gamepad::Set_attribute(std::string const & attribute, std::vector<u
 
 void tedpad::Gamepad::from_tpdFile(std::string const & fileContent)
 {
-	from_tpdFile(fileContent.c_str(), fileContent.size());
+	from_gamepadFullDescription(File::TPD_to_GamepadFullDescription(fileContent));
 }
 
 void tedpad::Gamepad::from_tpdFile(std::vector<uint8_t> const & fileContent)
 {
-	from_tpdFile(fileContent.data(), fileContent.size());
+	from_tpdFile(std::string(fileContent.begin(), fileContent.end()));
 }
 
 void tedpad::Gamepad::from_tpdFile(char const * const fileContent, size_t const len)
 {
-	from_tpdFile(reinterpret_cast<uint8_t const *const>(fileContent), len);
+	from_tpdFile(std::string(fileContent, len));
 }
 
 void tedpad::Gamepad::from_tpdFile(uint8_t const * const fileContent, size_t const len)
 {
-	from_gamepadFullDescription(File::TPD_to_GamepadFullDescription(fileContent, len));
+	from_tpdFile(std::string(reinterpret_cast<char const *>(fileContent), len));
 }
 
 void tedpad::Gamepad::from_gamepadFullDescription(Module::GamepadFullDescription const & p0)
