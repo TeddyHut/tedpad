@@ -29,7 +29,11 @@ namespace tedpad {
 		};
 		//Returns p0 attribute type
 		struct p_AttributeDetermine_PlaceHolderType {
+			p_AttributeDetermine_PlaceHolderType(Module::Attribute::Generic const *const p0 = nullptr);
 			Module::Attribute::PlaceHolderType operator() (Module::Attribute::Generic const *const p0) const;
+			operator Module::Attribute::PlaceHolderType() const;
+
+			Module::Attribute::PlaceHolderType value = Module::Attribute::PlaceHolderType::Digital;
 		};
 		//Returns p0 attribute type
 		struct p_AttributeDetermine_Description {
@@ -42,6 +46,7 @@ namespace tedpad {
 			Analogue,
 			Axis,
 			Buffer,
+			Invalid,
 		};
 		enum class AttributeDirection : uint8_t {
 			Get,
@@ -60,6 +65,8 @@ namespace tedpad {
 		bool Get_attribute(std::string const &attribute, int16_t &out) const;
 		//Get a buffer attribute
 		bool Get_attribute(std::string const &attribute, std::vector<uint8_t> &out) const;
+		//Get the type of an attribute (can be an attribute of either direction)
+		AttributeType get_attributeType(std::string const &attribute) const;
 		//Set the data of the specified attribute. Returns 0 for success.
 		//Set a digital button attribute
 		bool Set_attribute(std::string const &attribute, bool const in);
@@ -121,6 +128,8 @@ namespace tedpad {
 
 		Module::Attribute::DataDirection conv_attributeDirection_to_dataDirection(AttributeDirection const direction) const;
 		Module::Attribute::PlaceHolderType conv_attributeType_to_placeHolderType(AttributeType const type) const;
+		AttributeType conv_placeHolderType_to_attributeType(Module::Attribute::PlaceHolderType const type) const;
+		
 		
 		uint8_t get_attributeServerOutCount(eg::Descriptor<> const attr_desc) const;
 		uint8_t get_attributeServerInCount(eg::Descriptor<> const attr_desc) const;

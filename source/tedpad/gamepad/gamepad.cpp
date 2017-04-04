@@ -16,9 +16,20 @@ bool tedpad::Gamepad::p_AttributeMatch::operator()(Module::Attribute::Generic co
 	return((attr_description & p0->description) && (attr_direction == p0->direction) && (p0->attributeName == attr_name));
 }
 
+tedpad::Gamepad::p_AttributeDetermine_PlaceHolderType::p_AttributeDetermine_PlaceHolderType(Module::Attribute::Generic const * const p0)
+{
+	if (p0 != nullptr)
+		value = (*this)(p0);
+}
+
 tedpad::Module::Attribute::PlaceHolderType tedpad::Gamepad::p_AttributeDetermine_PlaceHolderType::operator()(Module::Attribute::Generic const * const p0) const
 {
 	return(dynamic_cast<Module::Attribute::PlaceHolder const *>(p0)->value);
+}
+
+tedpad::Gamepad::p_AttributeDetermine_PlaceHolderType::operator tedpad::Module::Attribute::PlaceHolderType() const
+{
+	return(value);
 }
 
 tedpad::Module::Attribute::PlaceHolderType tedpad::Gamepad::p_AttributeDetermine_Description::operator()(Module::Attribute::Generic const * const p0) const
@@ -61,6 +72,15 @@ bool tedpad::Gamepad::Get_attribute(std::string const & attribute, std::vector<u
 		return(true);
 	out = dynamic_cast<Module::Attribute::Buffer *>((*itr))->value;
 	return(false);
+}
+
+tedpad::Gamepad::AttributeType tedpad::Gamepad::get_attributeType(std::string const & attribute) const
+{
+
+	auto itr = std::find_if(vec_attribute.begin(), vec_attribute.end(), [&](Module::Attribute::Generic const *const p0) { return(p0->attributeName == attribute); });
+	if (itr == vec_attribute.end())
+		return(AttributeType::Invalid);
+	return(conv_placeHolderType_to_attributeType(p_AttributeDetermine_PlaceHolderType(*itr)));
 }
 
 bool tedpad::Gamepad::Set_attribute(std::string const & attribute, bool const in)
@@ -319,6 +339,14 @@ tedpad::Module::Attribute::DataDirection tedpad::Gamepad::conv_attributeDirectio
 tedpad::Module::Attribute::PlaceHolderType tedpad::Gamepad::conv_attributeType_to_placeHolderType(AttributeType const type) const
 {
 	return(map_AttributeType_PlaceHolderType.at(type));
+}
+
+tedpad::Gamepad::AttributeType tedpad::Gamepad::conv_placeHolderType_to_attributeType(Module::Attribute::PlaceHolderType const type) const
+{
+	auto itr = std::find_if(map_AttributeType_PlaceHolderType.begin(), map_AttributeType_PlaceHolderType.end(), [&](std::pair<AttributeType const, Module::Attribute::PlaceHolderType const> const &p0) { return(p0.second == type); });
+	if (itr == map_AttributeType_PlaceHolderType.end())
+		return(AttributeType::Invalid);
+	return((*itr).first);
 }
 
 uint8_t tedpad::Gamepad::get_attributeServerOutCount(eg::Descriptor<> const attr_desc) const
