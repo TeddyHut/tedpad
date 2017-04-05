@@ -35,7 +35,7 @@ void tedpad::Module::GamepadBriefDescription::from_packetModule(PacketModule con
 	out_analogueCount = *itr++;
 	out_axisCount = *itr++;
 	out_bufferCount = *itr++;
-	in_bufferCount = *itr++;
+	in_digitalCount = *itr++;
 	in_analogueCount = *itr++;
 	in_axisCount = *itr++;
 	in_bufferCount = *itr++;
