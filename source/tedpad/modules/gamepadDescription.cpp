@@ -30,7 +30,7 @@ void tedpad::Module::GamepadBriefDescription::from_packetModule(PacketModule con
 		description[Key::Module] = Value::Module::Invalid;
 		return;
 	}
-	gamepadName = std::string(p0.data.begin(), itr);
+	gamepadName = std::string(p0.data.begin(), itr++);
 	out_digitalCount = *itr++;
 	out_analogueCount = *itr++;
 	out_axisCount = *itr++;
