@@ -24,7 +24,7 @@ tedpad::Gamepad::p_AttributeDetermine_PlaceHolderType::p_AttributeDetermine_Plac
 
 tedpad::Module::Attribute::PlaceHolderType tedpad::Gamepad::p_AttributeDetermine_PlaceHolderType::operator()(Module::Attribute::Generic const * const p0) const
 {
-	return(dynamic_cast<Module::Attribute::PlaceHolder const *>(p0)->value);
+	return((p0->description[Key::Module] & Value::Module::Attribute_PlaceHolder) ? dynamic_cast<Module::Attribute::PlaceHolder const *>(p0)->value : map_Description_PlaceHolderType.at(p0->description[Key::Module]));
 }
 
 tedpad::Gamepad::p_AttributeDetermine_PlaceHolderType::operator tedpad::Module::Attribute::PlaceHolderType() const
